@@ -1,0 +1,25 @@
+{
+  "name": "ql-purs",
+  "version": "0.1.0",
+  "description": "QuickLift front end in PureScript",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/parsonsmatt/ql-purs.git"
+  },
+  "author": "Matt Parsons",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/parsonsmatt/ql-purs/issues"
+  },
+  "homepage": "https://github.com/parsonsmatt/ql-purs#readme",
+  "dependencies": {
+    "virtual-dom": "^2.1.1"
+  }
+}
