@@ -14,10 +14,3 @@ getUser :: forall eff. Int -> Aff (ajax :: AJAX | eff) (Maybe User)
 getUser i = do
   { response: response } <- AJ.get ("users/" ++ show i)
   pure <<< eitherToMaybe <<< fromResponse $ response
-
-getUsers :: forall eff. Aff (ajax :: AJAX | eff) (Array User)
-getUsers = do
-  { response: response } <- AJ.get "users"
-  pure case fromResponse response of
-       Left err -> []
-       Right users -> users
