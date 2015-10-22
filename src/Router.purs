@@ -18,27 +18,55 @@ import Routing.Match
 import Routing.Match.Class
 
 import qualified Layout as L
-import Util
+
+import qualified Component.Profile as Profile
+import qualified Component.Sessions as Sessions
 
 data Input a 
   = Goto Routes a
 
+data CRUD
+  = Index
+  | Show Number
+
 data Routes
   = Profile
-  | Session
+  | Sessions CRUD
   | Home
 
 init :: State
 init = { currentPage: "Home" }
 
 routing :: Match Routes
-routing = Profile <$ lit "" <* lit "profile"
-      <|> Session <$ lit "" <* lit "session"
-      <|> Home <$ lit ""
+routing = profile
+      <|> sessions
+      <|> home
+  where
+    profile = Profile <$ route "profile"
+    home = Home <$ lit ""
+    sessions = Sessions <$> (route "sessions" *> parseCRUD)
+    route str = lit "" *> lit str
+    parseCRUD = Show <$> num <|> pure Index
 
 type State =
   { currentPage :: String 
   }
+
+type ChildState = Either Profile.State Sessions.State
+type ChildQuery = Coproduct Profile.Input Sessions.Input
+type ChildSlot = Either Profile.Slot Sessions.Slot
+
+pathToProfile :: ChildPath Profile.State ChildState Profile.Input ChildQuery Profile.Slot ChildSlot
+pathToProfile = cpL
+
+pathToSessions :: ChildPath Sessions.State ChildState Sessions.Input ChildQuery Sessions.Slot ChildSlot
+pathToSessions = cpR
+
+type StateP g
+  = InstalledState State ChildState Input ChildQuery g ChildSlot
+
+type QueryP
+  = Coproduct Input (ChildF ChildSlot ChildQuery)
 
 ui :: forall g. (Functor g) => Component State Input g
 ui = component render eval
@@ -55,30 +83,25 @@ ui = component render eval
     eval (Goto Profile next) = do
       modify (_ { currentPage = "Profile" })
       pure next
-    eval (Goto Session next) = do
-      modify (_ { currentPage = "Session" })
+    eval (Goto (Sessions view) next) = do
+      modify case view of
+                  Index -> (_ { currentPage = "Sessions" })
+                  Show n -> (_ { currentPage = "Session " ++ show n })
       pure next
     eval (Goto Home next) = do
       modify (_ { currentPage = "Home" })
       pure next
 
 type Effects e = (dom :: DOM, avar :: AVAR, err :: EXCEPTION | e)
-type DriverEffects e = (dom :: DOM | e)
 
-routeSignal :: forall eff. Driver Input (eff)
-            -> Aff (err :: EXCEPTION, avar :: AVAR, dom :: DOM | eff) Unit
+routeSignal :: forall eff. Driver Input eff
+            -> Aff (Effects eff) Unit
 routeSignal driver = do
   Tuple old new <- matchesAff routing
-  pure unit
   redirects driver old new
 
-redirects :: forall eff. Driver Input (eff)
+redirects :: forall eff. Driver Input eff
           -> Maybe Routes
           -> Routes
-          -> Aff (dom :: DOM, avar :: AVAR, err :: EXCEPTION | eff) Unit
-redirects driver _ Session = do
-  driver (action (Goto Session))
-redirects driver _ Profile = do
-  driver (action (Goto Profile))
-redirects driver _ Home = do
-  driver (action (Goto Home))
+          -> Aff (Effects eff) Unit
+redirects driver _ = driver <<< action <<< Goto

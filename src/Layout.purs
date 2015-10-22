@@ -37,10 +37,10 @@ container_ = container []
 header =
   H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarDefault] ]
     [ container_
-      [ H.a [ P.classes [ B.navbarBrand ], P.href "#" ] 
+      [ H.a [ P.classes [ B.navbarBrand ], P.href "#/" ] 
         [ H.text "QuickLift" ]
       , H.ul [ P.classes [ B.navbarNav, B.nav ] ]
-        [ H.li_ [ H.a [ P.href "#/session" ]
+        [ H.li_ [ H.a [ P.href "#/sessions" ]
                 [ H.text "Log a Session" ] ]
         , H.li_ [ H.a [ P.href "#/profile" ] 
                 [ H.text "See your Profile" ] ]
