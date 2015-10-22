@@ -8,12 +8,14 @@ module BigPrelude
   , module Data.Tuple
   , module Control.Apply
   , module Control.Monad.Eff.Class
+  , module Control.Plus
   , eitherToMaybe
   , eitherToList
   , eitherToArray
   ) where
 
 import Prelude
+import Control.Plus
 import Control.Alt
 import Control.Apply
 import Data.Functor
