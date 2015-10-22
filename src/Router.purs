@@ -21,23 +21,20 @@ import qualified Layout as L
 import Util
 
 data Input a 
-  = GotoSession a
-  | GotoProfile a
-
-instance inputFunctor :: Functor Input where
-  map f (GotoSession a) = GotoSession (f a)
-  map f (GotoProfile a) = GotoProfile (f a)
+  = Goto Routes a
 
 data Routes
-  = ViewProfile
-  | LogSession
+  = Profile
+  | Session
+  | Home
 
 init :: State
-init = { currentPage: "lolo" }
+init = { currentPage: "Home" }
 
 routing :: Match Routes
-routing = ViewProfile <$ lit "profile"
-      <|> LogSession <$ lit "session"
+routing = Profile <$ lit "" <* lit "profile"
+      <|> Session <$ lit "" <* lit "session"
+      <|> Home <$ lit ""
 
 type State =
   { currentPage :: String 
@@ -48,21 +45,21 @@ ui = component render eval
   where
     render state =
       L.defaultLayout
-        [ H.p_ 
+        [ H.h1_ [ H.text (state.currentPage) ]
+        , H.p_ 
           [ H.text "Lorem asdf asdf asdf asdf aosdifuh api9usd8ygfa dofasduiofhyaoi sudhfoa kjndf,kajshcvoiuayhsdofjkqnwefkljhnasodiufyha sdofjkibnasldkfuha so8idfyughaosdk jfnlaskdjfhaoi sduyfhoaisdfnh laksjdhf oaiusdhyfo aisudhfn la;ksdjhf oaiusdy hfaisdf. QuickLift is a quick and easy way to log your weightlifting sessions."
           ]
-        , H.h1_ [ H.text (state.currentPage) ]
-        , H.p [ E.onClick $ E.input_ GotoSession ] [ H.text "asdf" ]
         ]
 
     eval :: Eval Input State Input g
-    eval (GotoProfile next) = do
+    eval (Goto Profile next) = do
       modify (_ { currentPage = "Profile" })
-      trace "wtf" \_ -> pure unit
       pure next
-    eval (GotoSession next) = do
-      trace "wtf" \_ -> pure unit
+    eval (Goto Session next) = do
       modify (_ { currentPage = "Session" })
+      pure next
+    eval (Goto Home next) = do
+      modify (_ { currentPage = "Home" })
       pure next
 
 type Effects e = (dom :: DOM, avar :: AVAR, err :: EXCEPTION | e)
@@ -71,7 +68,7 @@ type DriverEffects e = (dom :: DOM | e)
 routeSignal :: forall eff. Driver Input (eff)
             -> Aff (err :: EXCEPTION, avar :: AVAR, dom :: DOM | eff) Unit
 routeSignal driver = do
-  trace "asdfasdfasdf" \_ -> pure unit
+  --trace "asdfasdfasdf" \_ -> pure unit
   Tuple old new <- matchesAff routing
   pure unit
   redirects driver old new
@@ -80,13 +77,9 @@ redirects :: forall eff. Driver Input (eff)
           -> Maybe Routes
           -> Routes
           -> Aff (dom :: DOM, avar :: AVAR, err :: EXCEPTION | eff) Unit
-redirects driver _ LogSession = do
-  trace "goto log session" \_ -> pure unit
-  --replaceLocation "#/session"
-  driver (action GotoSession)
-  pure unit
-redirects driver _ ViewProfile = do
-  trace "thing with profile" \_ -> pure unit
-  --replaceLocation "#/profile"
-  driver (action GotoProfile)
-  pure unit
+redirects driver _ Session = do
+  driver (action (Goto Session))
+redirects driver _ Profile = do
+  driver (action (Goto Profile))
+redirects driver _ Home = do
+  driver (action (Goto Home))
