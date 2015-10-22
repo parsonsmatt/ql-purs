@@ -10,7 +10,7 @@ import Control.Monad.Eff.Exception (throwException)
 
 import qualified Router as R
 
-main :: Eff _ Unit
+main :: forall eff. Eff (R.Effects eff) Unit
 main = runAff throwException (const (pure unit)) $ do
   app <- runUI R.ui R.init
   appendToBody app.node
