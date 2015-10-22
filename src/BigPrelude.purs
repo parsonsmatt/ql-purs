@@ -3,16 +3,28 @@ module BigPrelude
   , module Data.Maybe
   , module Data.Either
   , module Control.Monad.Eff
-  , module Data.List
+  , module Data.Functor
+  , module Control.Alt
+  , module Data.Tuple
+  , module Control.Apply
+  , module Control.Monad.Eff.Class
   , eitherToMaybe
   , eitherToList
+  , eitherToArray
   ) where
 
 import Prelude
+import Control.Alt
+import Control.Apply
+import Data.Functor
+import Data.Tuple
 import Data.Maybe
-import Data.List
 import Data.Either
+import qualified Data.Array as A
+import qualified Data.List as L
+import Data.List (List())
 import Control.Monad.Eff
+import Control.Monad.Eff.Class
 
 eitherToMaybe :: forall a b. Either b a -> Maybe a
 eitherToMaybe (Left _) =
@@ -22,6 +34,12 @@ eitherToMaybe (Right a) =
 
 eitherToList :: forall a b. Either b a -> List a
 eitherToList (Left _) =
-  Nil
+  L.Nil
 eitherToList (Right a) =
-  Cons a Nil
+  L.Cons a L.Nil
+
+eitherToArray :: forall a b. Either b a -> Array a
+eitherToArray (Left _) =
+  []
+eitherToArray (Right a) =
+  [a]

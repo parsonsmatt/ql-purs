@@ -15,6 +15,8 @@
     "purescript-halogen": "~0.5.1",
     "purescript-halogen-bootstrap": "~0.4.0",
     "purescript-generics": "~0.6.2",
-    "purescript-affjax": "~0.9.0"
+    "purescript-affjax": "~0.9.0",
+    "purescript-routing": "~0.2.0",
+    "purescript-aff": "~0.13.0"
   }
 }
