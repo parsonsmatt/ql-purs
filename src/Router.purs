@@ -59,17 +59,20 @@ ui = component render eval
       modify (_ { currentPage = "Session" })
       pure next
 
-routeSignal :: Driver Input _
-            -> Aff _ Unit
+type Effects = (dom :: DOM, avar :: AVAR, err :: EXCEPTION)
+
+routeSignal :: Driver Input Effects
+            -> Aff Effects Unit
 routeSignal driver = do
   routeTpl <- matchesAff routing
   uncurry (redirects driver) routeTpl
 
 
-redirects :: Driver Input _
-          -> Maybe Routes -> Routes
-          -> Aff _ Unit
-redirects driver _ ViewProfile = do
+redirects :: Driver Input Effects
+          -> Maybe Routes
+          -> Routes
+          -> Aff Effects Unit
+redirects driver _ LogSession = do
   AF.liftEff' (replaceLocation "#/session")
   driver (action GotoSession)
   pure unit
