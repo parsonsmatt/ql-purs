@@ -73,19 +73,20 @@ routeSignal :: forall eff. Driver Input (eff)
 routeSignal driver = do
   trace "asdfasdfasdf" \_ -> pure unit
   Tuple old new <- matchesAff routing
-  redirects driver old new
   pure unit
-
+  redirects driver old new
 
 redirects :: forall eff. Driver Input (eff)
           -> Maybe Routes
           -> Routes
           -> Aff (dom :: DOM, avar :: AVAR, err :: EXCEPTION | eff) Unit
 redirects driver _ LogSession = do
+  trace "goto log session" \_ -> pure unit
   replaceLocation "#/session"
   driver (action GotoSession)
   pure unit
 redirects driver _ ViewProfile = do
+  trace "thing with profile" \_ -> pure unit
   replaceLocation "#/profile"
   driver (action GotoProfile)
   pure unit
