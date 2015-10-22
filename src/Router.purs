@@ -47,7 +47,7 @@ ui = component render eval
       L.defaultLayout
         [ H.h1_ [ H.text (state.currentPage) ]
         , H.p_ 
-          [ H.text "Lorem asdf asdf asdf asdf aosdifuh api9usd8ygfa dofasduiofhyaoi sudhfoa kjndf,kajshcvoiuayhsdofjkqnwefkljhnasodiufyha sdofjkibnasldkfuha so8idfyughaosdk jfnlaskdjfhaoi sduyfhoaisdfnh laksjdhf oaiusdhyfo aisudhfn la;ksdjhf oaiusdy hfaisdf. QuickLift is a quick and easy way to log your weightlifting sessions."
+          [ H.text "QuickLift is a quick and easy way to log your weightlifting sessions."
           ]
         ]
 
@@ -68,7 +68,6 @@ type DriverEffects e = (dom :: DOM | e)
 routeSignal :: forall eff. Driver Input (eff)
             -> Aff (err :: EXCEPTION, avar :: AVAR, dom :: DOM | eff) Unit
 routeSignal driver = do
-  --trace "asdfasdfasdf" \_ -> pure unit
   Tuple old new <- matchesAff routing
   pure unit
   redirects driver old new
