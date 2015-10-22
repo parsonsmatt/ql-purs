@@ -82,11 +82,11 @@ redirects :: forall eff. Driver Input (eff)
           -> Aff (dom :: DOM, avar :: AVAR, err :: EXCEPTION | eff) Unit
 redirects driver _ LogSession = do
   trace "goto log session" \_ -> pure unit
-  replaceLocation "#/session"
+  --replaceLocation "#/session"
   driver (action GotoSession)
   pure unit
 redirects driver _ ViewProfile = do
   trace "thing with profile" \_ -> pure unit
-  replaceLocation "#/profile"
+  --replaceLocation "#/profile"
   driver (action GotoProfile)
   pure unit

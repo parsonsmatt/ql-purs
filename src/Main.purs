@@ -14,5 +14,4 @@ main :: forall eff. Eff (R.Effects eff) Unit
 main = runAff throwException (const (pure unit)) $ do
   app <- runUI R.ui R.init
   appendToBody app.node
-  (R.routeSignal app.driver)
-
+  forkAff $ R.routeSignal app.driver
