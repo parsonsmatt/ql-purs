@@ -1,0 +1,3 @@
+#!/bin/sh
+
+pulp browserify -O -t assets/app.js
