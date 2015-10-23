@@ -1,9 +1,12 @@
 module Halogen.Extra where
 
+import Prelude
 import Data.Monoid
 
 import Halogen
 import qualified Halogen.HTML.Indexed as H
+
+import Types
 
 -- | This slot convenience function takes the component, state, and slot
 -- | constructor, and puts them in the slot. The argument order allows
@@ -32,3 +35,9 @@ mslot :: forall s f g p i. (Monoid s)
       -> p
       -> HTML (SlotConstructor s f g p) i
 mslot comp = slot comp mempty
+
+mount :: forall s f g. (Functor g)
+      => Component s f g
+      -> s
+      -> ComponentSlot s f g
+mount comp state = \_ -> { component: comp, initialState: state }

@@ -13,7 +13,7 @@ import Control.Monad.Free (liftFI)
 import Halogen
 import qualified Halogen.HTML.Indexed as H
 import qualified Halogen.HTML.Events.Indexed as E
-import Halogen.Component.ChildPath (ChildPath(), cpR, cpL)
+import Halogen.Component.ChildPath (ChildPath(), cpR, cpL, (:>))
 
 import Routing
 import Routing.Match
@@ -23,21 +23,15 @@ import qualified Layout as L
 
 import qualified Component.Profile as Profile
 import qualified Component.Sessions as Sessions
+import qualified Component.Home as Home
+
+import Types
 
 data Input a 
   = Goto Routes a
 
-data CRUD
-  = Index
-  | Show Number
-
-data Routes
-  = Profile
-  | Sessions CRUD
-  | Home
-
 init :: State
-init = { currentPage: "Home" }
+init = { currentPage: Home }
 
 routing :: Match Routes
 routing = profile
@@ -48,21 +42,26 @@ routing = profile
     home = Home <$ lit ""
     sessions = Sessions <$> (route "sessions" *> parseCRUD)
     route str = lit "" *> lit str
-    parseCRUD = Show <$> num <|> pure Index
+    parseCRUD = Show <$> num 
+            <|> New <$ lit "new"
+            <|> pure Index
 
 type State =
-  { currentPage :: String 
+  { currentPage :: Routes
   }
 
-type ChildState = Either Profile.State Sessions.State
-type ChildQuery = Coproduct Profile.Input Sessions.Input
-type ChildSlot = Either Profile.Slot Sessions.Slot
+type ChildState = Either Profile.State (Either Home.State Sessions.State)
+type ChildQuery = Coproduct Profile.Input (Coproduct Home.Input Sessions.Input)
+type ChildSlot = Either Profile.Slot (Either Home.Slot Sessions.Slot)
 
 pathToProfile :: ChildPath Profile.State ChildState Profile.Input ChildQuery Profile.Slot ChildSlot
 pathToProfile = cpL
 
 pathToSessions :: ChildPath Sessions.State ChildState Sessions.Input ChildQuery Sessions.Slot ChildSlot
-pathToSessions = cpR
+pathToSessions = cpR :> cpR
+
+pathToHome :: ChildPath Home.State ChildState Home.Input ChildQuery Home.Slot ChildSlot
+pathToHome = cpR :> cpL
 
 type StateP g
   = InstalledState State ChildState Input ChildQuery g ChildSlot
@@ -70,38 +69,32 @@ type StateP g
 type QueryP
   = Coproduct Input (ChildF ChildSlot ChildQuery)
 
-ui :: forall g. (Plus g) 
-   => Component (StateP g) QueryP g
+ui :: forall eff. Component (StateP (QLEff eff)) QueryP (QLEff eff)
 ui = parentComponent render eval
   where
     render state =
       L.defaultLayout
-        [ H.h1_ [ H.text state.currentPage ]
-        , H.p_ 
-          [ H.text "QuickLift is a quick and easy way to log your weightlifting sessions."
-          ]
-        , viewPage state.currentPage
+        [ viewPage state.currentPage
         ]
 
-    viewPage :: String -> HTML (SlotConstructor ChildState ChildQuery g ChildSlot) Input
-    viewPage "Sessions" =
-      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: unit }
-    viewPage "Profile" =
-      H.slot' pathToProfile Profile.Slot \_ -> { component: Profile.ui, initialState: unit }
-    viewPage _ =
-      H.div_ []
+    viewPage :: Routes -> HTML (SlotConstructor ChildState ChildQuery (QLEff eff) ChildSlot) Input
+    viewPage (Sessions view) =
+      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: { currentCrud: view } }
+    viewPage Profile =
+      H.slot' pathToProfile Profile.Slot Profile.mount
+    viewPage Home =
+      H.slot' pathToHome Home.Slot Home.mount
 
-    eval :: EvalParent Input State ChildState Input ChildQuery g ChildSlot
+    eval :: EvalParent Input State ChildState Input ChildQuery (QLEff eff) ChildSlot
     eval (Goto Profile next) = do
-      modify (_ { currentPage = "Profile" })
+      modify (_ { currentPage = Profile })
       pure next
     eval (Goto (Sessions view) next) = do
-      modify case view of
-                  Index -> (_ { currentPage = "Sessions" })
-                  Show n -> (_ { currentPage = "Session " ++ show n })
+      modify (_ { currentPage = Sessions view })
+      query' pathToSessions Sessions.Slot (action (Sessions.Routed view))
       pure next
     eval (Goto Home next) = do
-      modify (_ { currentPage = "Home" })
+      modify (_ { currentPage = Home })
       pure next
 
 type Effects e = (dom :: DOM, avar :: AVAR, err :: EXCEPTION | e)
