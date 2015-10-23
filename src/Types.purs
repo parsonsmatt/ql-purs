@@ -20,3 +20,13 @@ type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState 
 
 type QLEff eff = Aff (HalogenEffects (ajax :: AJAX | eff)) 
 type QL eff = HalogenEffects (ajax :: AJAX | eff)
+
+-- link :: Routes -> String
+-- link Profile = "#/profile"
+-- link (Sessions view) = "#/sessions" ++ linkCrud view
+-- link Home = "#/"
+-- 
+-- linkCrud :: CRUD -> String
+-- linkCrud Index = ""
+-- linkCrud New = "/new"
+-- linkCrud (Show n) = "/" ++ show n

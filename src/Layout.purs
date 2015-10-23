@@ -10,6 +10,10 @@ import qualified Halogen.HTML.Properties.Indexed as P
 import qualified Halogen.Themes.Bootstrap3 as B
 import qualified Halogen.HTML.Events.Indexed as E
 
+import Types
+import HasLink
+
+
 row :: forall a b. Array (HTML a b) -> HTML a b
 row = H.div [ P.class_ B.row ]
 
@@ -37,12 +41,12 @@ container_ = container []
 header =
   H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarDefault] ]
     [ container_
-      [ H.a [ P.classes [ B.navbarBrand ], P.href "#/" ] 
+      [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ] 
         [ H.text "QuickLift" ]
       , H.ul [ P.classes [ B.navbarNav, B.nav ] ]
-        [ H.li_ [ H.a [ P.href "#/sessions" ]
+        [ H.li_ [ H.a [ P.href (link (Sessions Index)) ]
                 [ H.text "Log a Session" ] ]
-        , H.li_ [ H.a [ P.href "#/profile" ] 
+        , H.li_ [ H.a [ P.href (link Profile) ] 
                 [ H.text "See your Profile" ] ]
         ]
       ]
