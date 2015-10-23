@@ -1,3 +1,5 @@
 #!/bin/sh
 
+npm install
+pulp dep install
 pulp browserify -O -t assets/app.js
