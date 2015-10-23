@@ -9,6 +9,7 @@ import Control.Monad.Eff.Exception
 import Control.Monad.Aff.AVar
 import DOM
 import Control.Monad.Free (liftFI)
+import Data.Date
 
 import Halogen
 import qualified Halogen.HTML.Indexed as H
@@ -79,7 +80,7 @@ ui = parentComponent render eval
 
     viewPage :: Routes -> HTML (SlotConstructor ChildState ChildQuery (QLEff eff) ChildSlot) Input
     viewPage (Sessions view) =
-      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: { currentCrud: view } }
+      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: Sessions.initialState }
     viewPage Profile =
       H.slot' pathToProfile Profile.Slot Profile.mount
     viewPage Home =
