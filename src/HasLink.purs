@@ -1,5 +1,7 @@
 module HasLink where
 
+import Prelude
+
 import Types
 
 class HasLink a where
@@ -10,7 +12,7 @@ instance routesHasLink :: HasLink Routes where
   link (Sessions crud) = "#/sessions" ++ link crud
   link Home = "#/"
 
-instance routesHasLink :: HasLink CRUD where
+instance crudHasLink :: HasLink CRUD where
   link Index = ""
   link New = "/new"
   link (Show n) = "/" ++ show n
