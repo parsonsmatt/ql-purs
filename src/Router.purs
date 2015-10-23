@@ -80,23 +80,24 @@ ui = parentComponent render eval
 
     viewPage :: Routes -> HTML (SlotConstructor ChildState ChildQuery (QLEff eff) ChildSlot) Input
     viewPage (Sessions view) =
-      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: Sessions.initialState }
+      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: Sessions.initialState view }
     viewPage Profile =
       H.slot' pathToProfile Profile.Slot Profile.mount
     viewPage Home =
       H.slot' pathToHome Home.Slot Home.mount
 
     eval :: EvalParent Input State ChildState Input ChildQuery (QLEff eff) ChildSlot
-    eval (Goto Profile next) = do
-      modify (_ { currentPage = Profile })
+    eval (Goto route next) = do
+      modify (_ { currentPage = route })
+      handleRoute route
       pure next
-    eval (Goto (Sessions view) next) = do
-      modify (_ { currentPage = Sessions view })
+
+    handleRoute :: Routes -> _
+    handleRoute (Sessions view) = do
       query' pathToSessions Sessions.Slot (action (Sessions.Routed view))
-      pure next
-    eval (Goto Home next) = do
-      modify (_ { currentPage = Home })
-      pure next
+      pure unit
+    handleRoute _ =
+      pure unit
 
 type Effects e = (dom :: DOM, avar :: AVAR, err :: EXCEPTION | e)
 

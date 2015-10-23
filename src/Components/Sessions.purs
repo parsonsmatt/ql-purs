@@ -26,9 +26,9 @@ type State =
   }
 
 -- yes, I know, whatever, i'm just getting the date
-initialState :: State
-initialState =
-  { currentCrud: Index
+initialState :: CRUD -> State
+initialState view =
+  { currentCrud: view
   , currSessionText: ""
   , currSessionDate: runPure (unsafeInterleaveEff now)
   }
@@ -64,7 +64,7 @@ ui = component render eval
 
 indexPage =
   H.p_
-    [ H.a [ P.href "#/sessions/2" ] 
+    [ H.a [ P.href (link $ Session $ Show 2) ] 
           [ H.text "Session #2" ]
     , newButton
     ]

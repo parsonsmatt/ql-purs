@@ -44,7 +44,7 @@ header =
       [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ] 
         [ H.text "QuickLift" ]
       , H.ul [ P.classes [ B.navbarNav, B.nav ] ]
-        [ H.li_ [ H.a [ P.href (link (Sessions Index)) ]
+        [ H.li_ [ H.a [ P.href (link (Sessions New)) ]
                 [ H.text "Log a Session" ] ]
         , H.li_ [ H.a [ P.href (link Profile) ] 
                 [ H.text "See your Profile" ] ]
