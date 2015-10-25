@@ -14,6 +14,7 @@ import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
 import Types
+import HasLink
 
 data Input a
   = Routed CRUD a
@@ -64,7 +65,7 @@ ui = component render eval
 
 indexPage =
   H.p_
-    [ H.a [ P.href (link $ Session $ Show 2) ] 
+    [ H.a [ P.href (link $ Sessions $ Show 2.0) ] 
           [ H.text "Session #2" ]
     , newButton
     ]
@@ -93,8 +94,8 @@ sessionForm st =
     , H.div [ P.classes [ B.formGroup ] ]
         [ H.label [ P.class_ B.controlLabel ]
             [ H.text "Date:" ] 
-        , H.input [ P.classes [ B.formControl ]
-                  , P.value (formDateFromDate $ st.currSessionDate)
+        , H.input [ P.value (formDateFromDate $ st.currSessionDate)
+                  , P.classes [ B.formControl ] 
                   , P.inputType P.InputDate
                   ]
         ]
@@ -105,9 +106,9 @@ sessionForm st =
 formDateFromDate :: Date -> String
 formDateFromDate date =
   let y = intFromYear $ year date
-      m = monthFromEnum $ month date
+      m = 1 + (monthFromEnum $ month date)
       d = intFromDayOfMonth (dayOfMonth date)
-   in show y ++ "/" ++ show m ++ "/" ++ show d
+   in show y ++ "-" ++ show m ++ "-" ++ show d
 
 intFromDayOfMonth :: DayOfMonth -> Int
 intFromDayOfMonth (DayOfMonth d) = d
