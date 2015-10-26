@@ -1,20 +1,27 @@
 module Component.Sessions where
 
-import Prelude
+import BigPrelude
 import Data.Generic
 import Data.Date
 import Data.Date.UTC
 import Control.Monad.Eff
 import Control.Monad.Eff.Unsafe
+import Unsafe.Coerce
+
+import Debug.Trace
+import Control.Monad.Free (liftFI)
 
 import Halogen
 import qualified Halogen.HTML.Indexed as H
 import qualified Halogen.HTML.Properties.Indexed as P
+import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
 import Types
 import HasLink
+
+import qualified Form as F
 
 data Input a
   = Routed CRUD a
@@ -62,6 +69,10 @@ ui = component render eval
     eval (Routed crud n) = do
       modify (_{ currentCrud = crud })
       pure n
+    eval (Submit str n) = do
+      trace str (\_ -> pure unit)
+      pure n
+
 
 indexPage =
   H.p_
@@ -85,47 +96,7 @@ newButton =
 
 sessionForm :: State -> _
 sessionForm st =
-  H.form [ P.classes [ B.formGroup ] ]
-    [ H.div [ P.classes [ B.formGroup ] ] 
-        [ H.label [ P.class_ B.controlLabel ]
-            [ H.text "Session:" ]
-        , H.textarea [ P.classes [ B.formControl ] ]
-        ]
-    , H.div [ P.classes [ B.formGroup ] ]
-        [ H.label [ P.class_ B.controlLabel ]
-            [ H.text "Date:" ] 
-        , H.input [ P.value (formDateFromDate $ st.currSessionDate)
-                  , P.classes [ B.formControl ] 
-                  , P.inputType P.InputDate
-                  ]
-        ]
-    , H.button [ P.classes [B.btn, B.btnPrimary] ] 
-        [ H.text "Submit" ]
+  F.form (\e -> trace (unsafeCoerce e) (\_ -> pure unit) *> (Submit "lolo") )
+    [ F.textAreaFieldView "session" "Session:" [] (Right st.currSessionText) true
+    , F.dateFieldView "date" "Date:" [] (Right st.currSessionDate) true
     ]
-
-formDateFromDate :: Date -> String
-formDateFromDate date =
-  let y = intFromYear $ year date
-      m = 1 + (monthFromEnum $ month date)
-      d = intFromDayOfMonth (dayOfMonth date)
-   in show y ++ "-" ++ show m ++ "-" ++ show d
-
-intFromDayOfMonth :: DayOfMonth -> Int
-intFromDayOfMonth (DayOfMonth d) = d
-
-intFromYear :: Year -> Int
-intFromYear (Year i) = i
-
-monthFromEnum :: Month -> Int
-monthFromEnum January   = 0
-monthFromEnum February  = 1
-monthFromEnum March     = 2
-monthFromEnum April     = 3
-monthFromEnum May       = 4
-monthFromEnum June      = 5
-monthFromEnum July      = 6
-monthFromEnum August    = 7
-monthFromEnum September = 8
-monthFromEnum October   = 9
-monthFromEnum November  = 10
-monthFromEnum December  = 11

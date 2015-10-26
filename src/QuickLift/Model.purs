@@ -4,8 +4,12 @@ import BigPrelude
 
 import Data.Foreign.Class
 import Data.Generic
+import Data.Date
+import Data.Date.UTC
 
 import Network.HTTP.Affjax.Response
+
+import Form
 
 newtype User
   = User
@@ -27,3 +31,18 @@ instance respondableUser :: Respondable User where
   fromResponse json =
     mkUser <$> readProp "name" json 
            <*> readProp "email" json
+
+-- userForm :: Form User
+-- userForm = mkUser <$> areq textField Nothing <*> areq textField Nothing
+--   where
+--     textField :: Form String
+--     textField = Undefined
+
+newtype Session
+  = Session
+  { date :: Date
+  , text :: String
+  }
+
+mkSession :: Date -> String -> Session
+mkSession d t = Session { date: d, text: t }
