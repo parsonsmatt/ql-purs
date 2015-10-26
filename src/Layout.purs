@@ -27,7 +27,7 @@ defaultLayout page =
   H.div [ P.class_ B.container ]
     [ header
     , row
-        [ col B.colLg8 page ]
+        [ col' [ B.colLg10, B.colLgOffset1 ] page ]
     , row
       [ col' [ B.colMd8, B.colMdOffset2 ]
         [ footer ]
@@ -45,11 +45,21 @@ header =
     [ container_
       [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ] 
         [ H.text "QuickLift" ]
-      , H.ul [ P.classes [ B.navbarNav, B.nav ] ]
+      , H.ul [ P.classes [ B.navbarNav, B.nav, B.navTabs] ]
         [ H.li_ [ H.a [ P.href (link (Sessions New)) ]
                 [ H.text "Log a Session" ] ]
         , H.li_ [ H.a [ P.href (link Profile) ] 
                 [ H.text "See your Profile" ] ]
+        ]
+      , H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
+        [ H.li_ 
+          [ H.a [ P.href "#" ] 
+                [ H.text "Log in" ] 
+          ]
+        , H.li_ 
+          [ H.a [ P.href "#" ]
+                [ H.text "Sign up" ]
+          ]
         ]
       ]
     ]

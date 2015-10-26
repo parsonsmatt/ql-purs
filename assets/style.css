@@ -10,6 +10,10 @@ body {
     font-family: "Times New Roman", Times, serif;
 }
 
+body > div.container {
+    font-size: 1.2em;
+}
+
 nav.navbar-fixed-top {
     box-shadow: 0px 0px 15px;
 }
