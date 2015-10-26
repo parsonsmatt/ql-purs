@@ -20,6 +20,8 @@ row = H.div [ P.class_ B.row ]
 col :: forall a b. ClassName -> Array (HTML a b) -> HTML a b
 col sz = H.div [ P.class_ sz ]
 
+col' szs = H.div [ P.classes szs ]
+
 --defaultLayout :: forall a b. Array (HTML a b) -> HTML a b
 defaultLayout page =
   H.div [ P.class_ B.container ]
@@ -27,7 +29,7 @@ defaultLayout page =
     , row
         [ col B.colLg8 page ]
     , row
-      [ col B.colLg12
+      [ col' [ B.colMd8, B.colMdOffset2 ]
         [ footer ]
       ]
     ]
@@ -39,7 +41,7 @@ container attrs = H.div (P.class_ B.container : attrs)
 container_ = container []
 
 header =
-  H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarDefault] ]
+  H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarInverse] ]
     [ container_
       [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ] 
         [ H.text "QuickLift" ]
@@ -55,5 +57,7 @@ header =
 footer :: forall a b. HTML a b
 footer =
   H.footer [ P.class_ (H.className "footer") ]
-    [ H.text "QuickLift is a thing I guess"
+    [ H.text "QuickLift"
+    , H.ul []
+      (map (\s -> H.li [] [ H.text s ] ) [ "About", "Contact", "Facebook", "Twitter" ] )
     ]

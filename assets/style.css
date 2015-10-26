@@ -1,3 +1,46 @@
+html {
+    height: 100%;
+    overflow-y: scroll;
+}
+
 body {
+    height: 100%;
+    min-height: 100%;
     padding-top: 70px;
+    font-family: "Times New Roman", Times, serif;
+}
+
+nav.navbar-fixed-top {
+    box-shadow: 0px 0px 15px;
+}
+
+footer.footer {
+    margin-top: 40px;
+    padding-top: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    box-shadow: 10px;
+    border-top: 1px solid ;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+}
+
+footer ul {
+    float: right;
+    display: inline;
+    list-style: none;
+}
+
+footer ul li {
+    display: inline;
+}
+
+footer ul li:not(:first-child):before {
+    padding: 0.5em;
+    content: "|"
+}
+
+h1 {
+    font-size: 3em;
+    text-align: center;
 }
