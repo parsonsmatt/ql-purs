@@ -9,8 +9,6 @@ import Data.Date.UTC
 
 import Network.HTTP.Affjax.Response
 
-import Form
-
 newtype User
   = User
   { name :: String
@@ -32,12 +30,6 @@ instance respondableUser :: Respondable User where
     mkUser <$> readProp "name" json 
            <*> readProp "email" json
 
--- userForm :: Form User
--- userForm = mkUser <$> areq textField Nothing <*> areq textField Nothing
---   where
---     textField :: Form String
---     textField = Undefined
-
 newtype Session
   = Session
   { date :: Date
@@ -46,3 +38,9 @@ newtype Session
 
 mkSession :: Date -> String -> Session
 mkSession d t = Session { date: d, text: t }
+
+getSessionDate :: Session -> Date
+getSessionDate (Session d) = d.date
+
+getSessionText :: Session -> String
+getSessionText (Session s) = s.text

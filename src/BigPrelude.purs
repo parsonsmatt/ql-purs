@@ -1,6 +1,7 @@
 module BigPrelude
   ( module Prelude
   , module Data.Maybe
+  , module Data.Maybe.Unsafe
   , module Data.Either
   , module Control.Monad.Eff
   , module Data.Functor
@@ -9,18 +10,21 @@ module BigPrelude
   , module Control.Apply
   , module Control.Monad.Eff.Class
   , module Control.Plus
+  , module Data.Enum
   , eitherToMaybe
   , eitherToList
   , eitherToArray
   ) where
 
 import Prelude
+import Data.Enum
 import Control.Plus
 import Control.Alt
 import Control.Apply
 import Data.Functor
 import Data.Tuple
 import Data.Maybe
+import Data.Maybe.Unsafe
 import Data.Either
 import qualified Data.Array as A
 import qualified Data.List as L
