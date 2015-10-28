@@ -21,7 +21,7 @@ import Data.Argonaut.Printer
 import Network.HTTP.Affjax.Request
 import Network.HTTP.Affjax.Response
 
-data Session
+newtype Session
   = Session
   { date :: Date
   , text :: String
