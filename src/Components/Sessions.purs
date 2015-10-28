@@ -34,7 +34,7 @@ type State =
   , loadedSessions :: Maybe (Array Session)
   }
 
-initialState :: forall g. CRUD -> StateP
+initialState :: forall eff. CRUD -> StateP eff
 initialState view = installedState
   { currentCrud: view
   , loadedSessions: Nothing
@@ -50,11 +50,11 @@ instance eqSlot :: Eq Slot where
 instance ordGeneric :: Ord Slot where
   compare = gCompare
 
-type StateP = InstalledState State New.State Input New.Input QLApp New.Slot
+type StateP eff = InstalledState State New.State Input New.Input (QLEff eff) New.Slot
 
 type QueryP = Coproduct Input (ChildF New.Slot New.Input)
 
-ui :: Component StateP QueryP QLApp
+ui :: forall eff. Component (StateP eff) QueryP (QLEff eff)
 ui = parentComponent render eval
   where
     render st =
@@ -67,11 +67,12 @@ ui = parentComponent render eval
     currentView (Show n) _ = showPage n
     currentView New _ = EX.slot New.ui New.initialState New.Slot
 
-    eval :: EvalParent Input State New.State Input New.Input QLApp New.Slot
+    eval :: EvalParent Input State New.State Input New.Input (QLEff eff) New.Slot
     eval (Routed crud n) = do
       modify (_{ currentCrud = crud })
       when (crud == Index) do
-        s <- liftAff' (API.getUserSessions 1)
+        -- s <- liftAff' (API.getUserSessions 1)
+        let s = Nothing
         modify (_{ loadedSessions = s })
       pure n
 
