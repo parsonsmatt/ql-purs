@@ -12,7 +12,7 @@
   ],
   "dependencies": {
     "purescript-console": "^0.1.0",
-    "purescript-halogen": "purescript-halogen#master",
+    "purescript-halogen": "~0.5.2",
     "purescript-halogen-bootstrap": "~0.4.0",
     "purescript-generics": "~0.6.2",
     "purescript-affjax": "~0.9.0",
@@ -24,7 +24,7 @@
     "purescript-argonaut-codecs": "~0.3.0"
   },
   "resolutions": {
-    "purescript-halogen": "master",
+    "purescript-halogen": "~0.5.2",
     "purescript-generics": "~0.6.2"
   }
 }

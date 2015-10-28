@@ -20,7 +20,7 @@ import qualified Halogen.HTML.Indexed as H
 import Halogen.HTML.Core (Prop(..), HTML(..))
 
 submitButton t h =
-  H.button [ E.onClick $ E.input_ h, P.classes [ B.btn, B.btnPrimary ] ]
+  H.button [ E.onClick (\_ -> E.preventDefault $> E.stopPropagation $> action h), P.classes [ B.btn, B.btnPrimary ] ]
     [ H.text t ]
   
 submitButton_ = submitButton "Submit"

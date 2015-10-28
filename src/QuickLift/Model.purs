@@ -50,7 +50,7 @@ newtype Session
 instance encodeSession :: EncodeJson Session where
   encodeJson (Session s) =
        "text" := s.text
-    ~> "date" := renderDate s.date
+    ~> "date" := dateIso8601 s.date
     ~> "userId" := 1
     ~> jsonEmptyObject
 
@@ -70,6 +70,8 @@ getSessionDate (Session d) = d.date
 getSessionText :: Session -> String
 getSessionText (Session s) = s.text
 
+dateIso8601 :: Date -> String
+dateIso8601 = renderDate >>> (++ "T00:00:00.000Z")
 
 renderDate :: Date -> String
 renderDate date = y ++ "-" ++ m ++ "-" ++ d
