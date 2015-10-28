@@ -2,6 +2,7 @@ module Router where
 
 import BigPrelude
 
+import Data.Int hiding (fromString)
 import Data.Functor.Coproduct (Coproduct(..), left)
 import Control.Monad.Aff (Aff(), forkAff)
 import qualified Control.Monad.Aff as AF
@@ -43,9 +44,10 @@ routing = profile
     home = Home <$ lit ""
     sessions = Sessions <$> (route "sessions" *> parseCRUD)
     route str = lit "" *> lit str
-    parseCRUD = Show <$> num 
+    parseCRUD = Show <$> int
             <|> New <$ lit "new"
             <|> pure Index
+    int = floor <$> num
 
 type State =
   { currentPage :: Routes
@@ -83,7 +85,7 @@ ui = parentComponent render eval
 
     viewPage :: Routes -> HTML (SlotConstructor (ChildState eff) ChildQuery (QLEff eff) ChildSlot) Input
     viewPage (Sessions view) =
-      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: view }
+      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: Sessions.initialState view }
     viewPage Profile =
       H.slot' pathToProfile Profile.Slot Profile.mount
     viewPage Home =

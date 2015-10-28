@@ -43,6 +43,8 @@ initialState =
   { currentSession: Session
     { date: runPure (unsafeInterleaveEff D.now)
     , text: ""
+    , userId: 1
+    , id: -1
     }
   }
 

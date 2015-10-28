@@ -2,6 +2,8 @@ module Component.Sessions where
 
 import BigPrelude
 
+import Data.Array
+
 import Control.Monad
 import Data.Functor.Coproduct
 import Data.Generic
@@ -64,9 +66,16 @@ ui = parentComponent render eval
         , currentView st.currentCrud st
         ]
 
-    currentView Index st = indexPage st
-    currentView (Show n) _ = showPage n
-    currentView New _ = EX.slot New.ui New.initialState New.Slot
+    currentView Index st =
+      indexPage st
+    currentView (Show n) st = 
+      let session = do
+            sessions <- st.loadedSessions
+            i <- findIndex (\(Session s) -> s.id == n) sessions
+            sessions !! i
+       in showPage n session
+    currentView New _ =
+      EX.slot New.ui New.initialState New.Slot
 
     eval :: EvalParent Input State New.State Input New.Input (QLEff eff) New.Slot
     eval (Routed crud n) = do
@@ -95,18 +104,19 @@ loadButton =
   H.a [ E.onClick $ E.input_ LoadSessions ] [ H.text "Loaaaad" ]
 
 linkSession (Session s) =
-  H.a [ P.href (link (Sessions (Show 1.0))) ]
+  H.a [ P.href (link (Sessions (Show s.id))) ]
     [ H.text (renderDate s.date) ]
 
-showPage :: Number -> _
-showPage n =
-  H.p_ 
-    [ H.text ("Checking out session " ++ show n)
+showPage :: Int -> Maybe Session -> _
+showPage n (Just (Session s)) =
+  H.div_ 
+    [ H.h1_ [ H.text $ renderDate s.date ]
+    , H.p_ [ H.text s.text ]
     , newButton
     ]
 
 newButton = 
   H.p_
-    [ H.a [ P.href "#/sessions/new", P.classes [B.btn, B.btnDefault] ]
+    [ H.a [ P.href (link $ Sessions $ New), P.classes [B.btn, B.btnDefault] ]
       [ H.text "New Session" ]
     ]

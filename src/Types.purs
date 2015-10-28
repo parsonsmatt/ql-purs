@@ -8,7 +8,7 @@ import Network.HTTP.Affjax (AJAX())
 
 data CRUD
   = Index
-  | Show Number
+  | Show Int
   | New
 
 instance eqCrud :: Eq CRUD where

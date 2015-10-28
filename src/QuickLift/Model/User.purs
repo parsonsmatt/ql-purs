@@ -1,7 +1,4 @@
-module QuickLift.Model 
-  ( module QuickLift.Model.Session
-  , module QuickLift.Model.User
-  ) where
+module QuickLift.Model.User where
 
 import BigPrelude
 
@@ -24,6 +21,24 @@ import Data.Argonaut.Printer
 import Network.HTTP.Affjax.Request
 import Network.HTTP.Affjax.Response
 
-import QuickLift.Model.Session
-import QuickLift.Model.User
+newtype User
+  = User
+  { name :: String
+  , email :: String
+  }
+
+mkUser :: String -> String -> User
+mkUser n e = User { name: n, email: e }
+
+derive instance genericUser :: Generic User
+
+instance showUser :: Show User where
+  show = gShow
+
+instance respondableUser :: Respondable User where
+  responseType =
+    JSONResponse
+  fromResponse json =
+    mkUser <$> readProp "name" json 
+           <*> readProp "email" json
 
