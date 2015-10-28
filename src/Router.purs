@@ -51,26 +51,26 @@ type State =
   { currentPage :: Routes
   }
 
-type ChildState g = Either Profile.State (Either Home.State (Sessions.StateP g))
+type ChildState = Either Profile.State (Either Home.State (Sessions.StateP))
 type ChildQuery = Coproduct Profile.Input (Coproduct Home.Input Sessions.QueryP)
 type ChildSlot = Either Profile.Slot (Either Home.Slot Sessions.Slot)
 
-pathToProfile :: forall g. ChildPath Profile.State (ChildState g) Profile.Input ChildQuery Profile.Slot ChildSlot
+pathToProfile :: ChildPath Profile.State ChildState Profile.Input ChildQuery Profile.Slot ChildSlot
 pathToProfile = cpL
 
-pathToSessions :: forall g. ChildPath (Sessions.StateP g) (ChildState g) Sessions.QueryP ChildQuery Sessions.Slot ChildSlot
+pathToSessions :: ChildPath Sessions.StateP ChildState Sessions.QueryP ChildQuery Sessions.Slot ChildSlot
 pathToSessions = cpR :> cpR
 
-pathToHome :: forall g. ChildPath Home.State (ChildState g) Home.Input ChildQuery Home.Slot ChildSlot
+pathToHome :: ChildPath Home.State ChildState Home.Input ChildQuery Home.Slot ChildSlot
 pathToHome = cpR :> cpL
 
 type StateP g
-  = InstalledState State (ChildState g) Input ChildQuery g ChildSlot
+  = InstalledState State ChildState Input ChildQuery g ChildSlot
 
 type QueryP
   = Coproduct Input (ChildF ChildSlot ChildQuery)
 
-ui :: forall eff. Component (StateP (QLEff eff)) QueryP (QLEff eff)
+ui :: forall eff. Component (StateP QLApp) QueryP QLApp
 ui = parentComponent render eval
   where
     render state =
@@ -78,7 +78,7 @@ ui = parentComponent render eval
         [ viewPage state.currentPage
         ]
 
-    viewPage :: Routes -> HTML (SlotConstructor (ChildState (QLEff eff)) ChildQuery (QLEff eff) ChildSlot) Input
+    viewPage :: Routes -> HTML (SlotConstructor ChildState ChildQuery QLApp ChildSlot) Input
     viewPage (Sessions view) =
       H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: Sessions.initialState view }
     viewPage Profile =
@@ -86,7 +86,7 @@ ui = parentComponent render eval
     viewPage Home =
       H.slot' pathToHome Home.Slot Home.mount
 
-    eval :: EvalParent Input State (ChildState (QLEff eff)) Input ChildQuery (QLEff eff) ChildSlot
+    eval :: EvalParent Input State ChildState Input ChildQuery QLApp ChildSlot
     eval (Goto route next) = do
       modify (_ { currentPage = route })
       handleRoute route

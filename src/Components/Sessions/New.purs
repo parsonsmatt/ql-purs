@@ -23,6 +23,7 @@ import Debug.Trace
 
 import qualified Form as F
 import QuickLift.Model
+import QuickLift.Api
 
 import Types
 import HasLink
@@ -50,8 +51,7 @@ data Input a
   | EditDate String a
   | EditText String a
 
-ui :: forall g. (Functor g)
-   => Component State Input g
+ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
   where
     render st = 
@@ -60,32 +60,19 @@ ui = component render eval
          , F.date "date" "Date:" (renderDate <<< getSessionDate $ st.currentSession) EditDate
          ]
 
-    eval :: Eval _ _ _ g
-    eval (Submit a) = pure a
+    eval :: Eval _ _ _ (QLEff eff)
+    eval (Submit a) = do
+      st <- get
+      liftAff' (postSession st.currentSession)
+      pure a
+
     eval (EditDate str a) = do
       { currentSession: Session s } <- get
       let d = fromMaybe s.date (D.fromString str)
       when (s.date /= d) (modify (_ { currentSession = Session (s { date = d })}))
       pure a
+
     eval (EditText str a) = do
       { currentSession: Session s } <- get
       modify (_ { currentSession = Session (s { text = str })})
       pure a
-
-renderDate :: D.Date -> String
-renderDate date = y ++ "-" ++ m ++ "-" ++ d
-  where
-    y = (ypad <<< show) case D.year date of D.Year n -> n
-    m = pad (1 + (fromEnum $ D.month date))
-    d = pad case D.dayOfMonth date of D.DayOfMonth day -> day
-    pad n = let str = show n
-             in case Str.length str of
-                   1 ->  "0" ++ str
-                   _ -> str
-    ypad str =
-      case Str.length str of
-           0 -> "0000"
-           1 -> "000" ++ str
-           2 -> "00" ++ str
-           3 -> "0" ++ str
-           _ -> str

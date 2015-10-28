@@ -18,6 +18,7 @@ data Routes
 
 type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState :: s } 
 
+type QLApp = QLEff ()
 type QLEff eff = Aff (HalogenEffects (ajax :: AJAX | eff)) 
 type QL eff = HalogenEffects (ajax :: AJAX | eff)
 

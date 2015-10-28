@@ -30,7 +30,7 @@ type State =
   { currentCrud :: CRUD 
   }
 
-initialState :: forall g. CRUD -> StateP g
+initialState :: forall g. CRUD -> StateP
 initialState view = installedState
   { currentCrud: view
   }
@@ -45,12 +45,11 @@ instance eqSlot :: Eq Slot where
 instance ordGeneric :: Ord Slot where
   compare = gCompare
 
-type StateP g = InstalledState State New.State Input New.Input g New.Slot
+type StateP = InstalledState State New.State Input New.Input QLApp New.Slot
 
 type QueryP = Coproduct Input (ChildF New.Slot New.Input)
 
-ui :: forall g. (Plus g) 
-   => Component (StateP g) QueryP g
+ui :: Component StateP QueryP QLApp
 ui = parentComponent render eval
   where
     render st =
@@ -63,7 +62,7 @@ ui = parentComponent render eval
     currentView (Show n) _ = showPage n
     currentView New _ = EX.slot New.ui New.initialState New.Slot
 
-    eval :: EvalParent Input State New.State Input New.Input g New.Slot
+    eval :: EvalParent Input State New.State Input New.Input QLApp New.Slot
     eval (Routed crud n) = do
       modify (_{ currentCrud = crud })
       pure n

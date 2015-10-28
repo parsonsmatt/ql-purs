@@ -12,7 +12,7 @@ import Network.HTTP.Affjax (AJAX())
 import qualified Router as R
 import Types
 
-main :: forall eff. Eff (QL eff) Unit
+main :: Eff _ Unit
 main = runAff throwException (const (pure unit)) do
   app <- runUI R.ui (installedState R.init)
   appendToBody app.node
