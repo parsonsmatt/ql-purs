@@ -5,13 +5,17 @@ import Data.Generic
 import Control.Monad.Aff (Aff())
 
 import Halogen
-import qualified Halogen.Extra as E
+import qualified Halogen.Extra as EX
 import qualified Halogen.HTML.Indexed as H
+import qualified Halogen.HTML.Properties.Indexed as P
+import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Indexed as E
+import qualified Halogen.Themes.Bootstrap3 as B
 
 import QuickLift.Model
 import qualified QuickLift.Api as API
 
+import HasLink
 import Types
 
 data Input a
@@ -33,7 +37,7 @@ instance ordGeneric :: Ord Slot where
   compare = gCompare
 
 mount :: forall eff. ComponentSlot State Input (QLEff eff)
-mount = E.mount ui initialState
+mount = EX.mount ui initialState
 
 ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
@@ -42,13 +46,17 @@ ui = component render eval
       H.div_
         [ H.h1_ [ H.text "Home" ]
         , H.p_ [ H.text "what a nice profile!" ]
-        , H.p_ [ H.text (printUser st.user) ]
+        , H.div_ (printUser st.user)
         , H.a [ E.onClick $ E.input_ (GetUser 1) ] 
               [ H.text "Get a user maybe?" ]
         ]
 
-    printUser Nothing = "Nothing there!"
-    printUser (Just (User user)) = "It's " ++ user.name ++ "!"
+    printUser Nothing = []
+    printUser (Just (User user)) =
+      [ H.p_ [ H.text ("It's " <> user.name <> "!") ]
+      , H.a [ P.href (link $ Sessions Index) ]
+        [ H.text "Go to sessions" ]
+      ]
 
     eval :: Eval _ _ _ (QLEff eff)
     eval (GetUser i n) = do

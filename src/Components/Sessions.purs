@@ -2,6 +2,7 @@ module Component.Sessions where
 
 import BigPrelude
 
+import Control.Monad
 import Data.Functor.Coproduct
 import Data.Generic
 import Data.Date
@@ -18,6 +19,8 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
+import qualified QuickLift.Api as API
+import QuickLift.Model
 import Types
 import HasLink
 
@@ -28,11 +31,13 @@ data Input a
 
 type State =
   { currentCrud :: CRUD 
+  , loadedSessions :: Maybe (Array Session)
   }
 
 initialState :: forall g. CRUD -> StateP
 initialState view = installedState
   { currentCrud: view
+  , loadedSessions: Nothing
   }
 
 data Slot = Slot
@@ -58,17 +63,20 @@ ui = parentComponent render eval
         , currentView st.currentCrud st
         ]
 
-    currentView Index _ = indexPage
+    currentView Index st = indexPage st
     currentView (Show n) _ = showPage n
     currentView New _ = EX.slot New.ui New.initialState New.Slot
 
     eval :: EvalParent Input State New.State Input New.Input QLApp New.Slot
     eval (Routed crud n) = do
       modify (_{ currentCrud = crud })
+      when (crud == Index) do
+        s <- liftAff' (API.getUserSessions 1)
+        modify (_{ loadedSessions = s })
       pure n
 
 
-indexPage =
+indexPage st =
   H.p_
     [ H.a [ P.href (link $ Sessions $ Show 2.0) ] 
           [ H.text "Session #2" ]

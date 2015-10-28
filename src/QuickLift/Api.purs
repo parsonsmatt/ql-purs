@@ -18,6 +18,11 @@ getUser i = do
   { response: response } <- AJ.get ("users/" ++ show i)
   pure <<< eitherToMaybe <<< fromResponse $ response
 
+getUserSessions :: forall eff. Int -> Aff (ajax :: AJAX | eff) (Maybe (Array Session))
+getUserSessions i = map (map unArrSession) do
+  { response: response } <- AJ.get ("users/" ++ show i ++ "/sessions")
+  pure <<< eitherToMaybe <<< fromResponse $ response
+
 postSession :: forall eff. Session -> Aff (ajax :: AJAX | eff) _ 
 postSession s = do
   let r = AJ.affjax (AJ.defaultRequest { url = "sessions"
@@ -29,4 +34,3 @@ postSession s = do
   case res of
        "" -> pure unit
        _ -> pure unit
-      

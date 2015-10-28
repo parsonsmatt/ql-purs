@@ -5,9 +5,11 @@ import BigPrelude
 import qualified Data.String as Str
 import Unsafe.Coerce
 
+import Data.Foreign hiding (isNull, isArray)
 import Data.Foreign.Class
 import Data.Generic
 import Data.Date hiding (fromString)
+import qualified Data.Date as Date
 import Data.Date.UTC
 
 import Data.Argonaut.Combinators
@@ -40,12 +42,32 @@ instance respondableUser :: Respondable User where
     mkUser <$> readProp "name" json 
            <*> readProp "email" json
 
+instance sessionIsForeign :: IsForeign Session where
+  read = readSession
+    
+readSession :: Foreign -> F Session
+readSession f = do
+  t <- readProp "text" f
+  d <- readDate $ readProp "date" f
+  pure (mkSession d t)
+
+instance respondableSession :: Respondable Session where
+  responseType = JSONResponse
+  fromResponse = read
+
+readDate :: F String -> F Date
+readDate (Left s) = 
+  Left s
+readDate (Right s) = 
+  maybe error pure (Date.fromString s) 
+  where
+    error = Left (TypeMismatch "Date" "asdf")
+
 newtype Session
   = Session
   { date :: Date
   , text :: String
   }
-
 
 instance encodeSession :: EncodeJson Session where
   encodeJson (Session s) =
@@ -60,6 +82,16 @@ instance requestableSession :: Requestable Session where
     let str = printJson (encodeJson s) :: String
      in toRequest str
 
+newtype ArrSession = ArrSession (Array Session)
+
+unArrSession (ArrSession a) = a
+
+instance isForeignArrSession :: IsForeign ArrSession where
+  read f = ArrSession <$> read f
+
+instance respondableArrSession :: Respondable ArrSession where
+  responseType = JSONResponse
+  fromResponse = read
 
 mkSession :: Date -> String -> Session
 mkSession d t = Session { date: d, text: t }

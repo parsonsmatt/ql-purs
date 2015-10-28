@@ -11,6 +11,12 @@ data CRUD
   | Show Number
   | New
 
+instance eqCrud :: Eq CRUD where
+  eq Index Index = true
+  eq New New = true
+  eq (Show a) (Show b) = a == b
+  eq _ _ = false
+
 data Routes
   = Profile
   | Sessions CRUD

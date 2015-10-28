@@ -51,7 +51,7 @@ type State =
   { currentPage :: Routes
   }
 
-type ChildState = Either Profile.State (Either Home.State (Sessions.StateP))
+type ChildState = Either Profile.State (Either Home.State Sessions.StateP)
 type ChildQuery = Coproduct Profile.Input (Coproduct Home.Input Sessions.QueryP)
 type ChildSlot = Either Profile.Slot (Either Home.Slot Sessions.Slot)
 
@@ -64,13 +64,13 @@ pathToSessions = cpR :> cpR
 pathToHome :: ChildPath Home.State ChildState Home.Input ChildQuery Home.Slot ChildSlot
 pathToHome = cpR :> cpL
 
-type StateP g
-  = InstalledState State ChildState Input ChildQuery g ChildSlot
+type StateP
+  = InstalledState State ChildState Input ChildQuery QLApp ChildSlot
 
 type QueryP
   = Coproduct Input (ChildF ChildSlot ChildQuery)
 
-ui :: forall eff. Component (StateP QLApp) QueryP QLApp
+ui :: forall eff. Component StateP QueryP QLApp
 ui = parentComponent render eval
   where
     render state =

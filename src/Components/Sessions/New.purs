@@ -51,7 +51,7 @@ data Input a
   | EditDate String a
   | EditText String a
 
-ui :: forall eff. Component State Input (QLEff eff)
+ui :: forall eff. Component State Input QLApp
 ui = component render eval
   where
     render st = 
@@ -60,7 +60,7 @@ ui = component render eval
          , F.date "date" "Date:" (renderDate <<< getSessionDate $ st.currentSession) EditDate
          ]
 
-    eval :: Eval _ _ _ (QLEff eff)
+    eval :: Eval _ _ _ QLApp
     eval (Submit a) = do
       st <- get
       liftAff' (postSession st.currentSession)

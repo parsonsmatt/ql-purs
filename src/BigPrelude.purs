@@ -11,12 +11,14 @@ module BigPrelude
   , module Control.Monad.Eff.Class
   , module Control.Plus
   , module Data.Enum
+  , module Control.Bind
   , eitherToMaybe
   , eitherToList
   , eitherToArray
   ) where
 
 import Prelude
+import Control.Bind
 import Data.Enum
 import Control.Plus
 import Control.Alt
