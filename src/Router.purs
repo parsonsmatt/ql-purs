@@ -83,7 +83,7 @@ ui = parentComponent render eval
 
     viewPage :: Routes -> HTML (SlotConstructor (ChildState eff) ChildQuery (QLEff eff) ChildSlot) Input
     viewPage (Sessions view) =
-      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: Sessions.initialState view }
+      H.slot' pathToSessions Sessions.Slot \_ -> { component: Sessions.ui, initialState: view }
     viewPage Profile =
       H.slot' pathToProfile Profile.Slot Profile.mount
     viewPage Home =
@@ -96,9 +96,8 @@ ui = parentComponent render eval
       pure next
 
     handleRoute :: Routes -> _
-    handleRoute (Sessions view) = do
+    handleRoute (Sessions view) = void $
       query' pathToSessions Sessions.Slot (action (left <<< Sessions.Routed view))
-      pure unit
     handleRoute _ =
       pure unit
 
@@ -116,9 +115,3 @@ redirects :: forall eff. Driver QueryP eff
           -> Aff (Effects eff) Unit
 redirects driver _ =
   driver <<< left <<< action <<< Goto
--- redirects driver _ Home = 
---   driver (left (action (Goto Home))))
--- redirects driver _ Profile =
---   driver (left (action (Goto Profile))))
--- redirects driver _ (Sessions view) =
---   driver (left (action (Goto (Sessions view)))))

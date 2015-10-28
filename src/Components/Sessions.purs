@@ -28,6 +28,7 @@ import qualified Component.Sessions.New as New
 
 data Input a
   = Routed CRUD a
+  | LoadSessions a
 
 type State =
   { currentCrud :: CRUD 
@@ -70,19 +71,32 @@ ui = parentComponent render eval
     eval :: EvalParent Input State New.State Input New.Input (QLEff eff) New.Slot
     eval (Routed crud n) = do
       modify (_{ currentCrud = crud })
-      when (crud == Index) do
-        -- s <- liftAff' (API.getUserSessions 1)
-        let s = Nothing
-        modify (_{ loadedSessions = s })
+      when (crud == Index) (void (pure (action LoadSessions)))
       pure n
+
+    eval (LoadSessions a) = do
+      s <- liftH (liftAff' (API.getUserSessions 1))
+      modify (_{ loadedSessions = s })
+      pure a
+
 
 
 indexPage st =
-  H.p_
-    [ H.a [ P.href (link $ Sessions $ Show 2.0) ] 
-          [ H.text "Session #2" ]
-    , newButton
+  let sessions = case map linkSession <$> st.loadedSessions of
+                      Nothing -> H.p_ [ H.text "No sessions." ]
+                      Just s -> H.ul_ (map (H.li_ <<< pure) s)
+   in H.div_
+    [ newButton
+    , loadButton
+    , sessions
     ]
+
+loadButton =
+  H.a [ E.onClick $ E.input_ LoadSessions ] [ H.text "Loaaaad" ]
+
+linkSession (Session s) =
+  H.a [ P.href (link (Sessions (Show 1.0))) ]
+    [ H.text (renderDate s.date) ]
 
 showPage :: Number -> _
 showPage n =
