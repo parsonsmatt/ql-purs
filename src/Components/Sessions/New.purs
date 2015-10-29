@@ -76,10 +76,9 @@ ui = component render eval
 
     eval :: Eval _ _ _ (QLEff eff)
     eval (Submit a) = do
-      st <- get
-      result <- liftAff' (postSession st.currentSession)
+      st <- gets _.currentSession
+      result <- liftAff' (postSession st)
       modify (_{ success = result })
-      liftEff' (log (show result))
       pure a
 
     eval (EditDate str a) = do
