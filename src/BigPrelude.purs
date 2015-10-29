@@ -15,6 +15,7 @@ module BigPrelude
   , eitherToMaybe
   , eitherToList
   , eitherToArray
+  , maybeToArray
   ) where
 
 import Prelude
@@ -51,3 +52,6 @@ eitherToArray (Left _) =
   []
 eitherToArray (Right a) =
   [a]
+
+maybeToArray :: forall a b. Maybe a -> Array a
+maybeToArray = maybe [] pure

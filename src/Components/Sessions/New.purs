@@ -3,8 +3,6 @@ module Component.Sessions.New where
 import BigPrelude
 import Control.Monad
 
-import qualified Data.Date as D
-import qualified Data.Date.UTC as D
 import Data.Generic
 
 import qualified Data.String as Str
@@ -26,6 +24,8 @@ import QuickLift.Model
 import QuickLift.Api
 
 import Types
+import Types.Date
+
 import HasLink
 
 data Slot = Slot
@@ -36,16 +36,18 @@ instance ordGeneric :: Ord Slot where compare = gCompare
 
 type State =
   { currentSession :: Session
+  , success :: Maybe Int
   }
 
 initialState :: State
 initialState =
   { currentSession: Session
-    { date: runPure (unsafeInterleaveEff D.now)
+    { date: runPure (unsafeInterleaveEff now)
     , text: ""
     , userId: 1
     , id: -1
     }
+  , success: Nothing
   }
 
 data Input a
@@ -57,20 +59,32 @@ ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
   where
     render st = 
-       F.form Submit
-         [ F.textarea "session" "Session:" (getSessionText st.currentSession) EditText
-         , F.date "date" "Date:" (renderDate <<< getSessionDate $ st.currentSession) EditDate
-         ]
+      H.div_ 
+        [ F.form Submit
+          [ F.textarea "session" "Session:" (getSessionText st.currentSession) EditText
+          , F.date "date" "Date:" (yyyy_mm_dd <<< getSessionDate $ st.currentSession) EditDate
+          ]
+        , succLink st.success
+        ]
+
+    succLink Nothing =
+      H.p_ [ H.text "lol" ]
+    succLink (Just n) =
+      H.a [ P.href (link (Sessions $ Show n)) ]
+        [ H.text "asdfffff" ]
+
 
     eval :: Eval _ _ _ (QLEff eff)
     eval (Submit a) = do
       st <- get
-      liftAff' (postSession st.currentSession)
+      result <- liftAff' (postSession st.currentSession)
+      modify (_{ success = result })
+      liftEff' (log (show result))
       pure a
 
     eval (EditDate str a) = do
       { currentSession: Session s } <- get
-      let d = fromMaybe s.date (D.fromString str)
+      let d = fromMaybe s.date (dateFromString str)
       when (s.date /= d) (modify (_ { currentSession = Session (s { date = d })}))
       pure a
 

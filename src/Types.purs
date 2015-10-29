@@ -5,6 +5,7 @@ import Prelude
 import Halogen
 import Control.Monad.Aff (Aff())
 import Network.HTTP.Affjax (AJAX())
+import Control.Monad.Eff.Console
 
 data CRUD
   = Index
@@ -25,5 +26,5 @@ data Routes
 type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState :: s } 
 
 type QLApp = QLEff ()
-type QLEff eff = Aff (HalogenEffects (ajax :: AJAX | eff)) 
-type QL eff = HalogenEffects (ajax :: AJAX | eff)
+type QLEff eff = Aff (QL eff) 
+type QL eff = HalogenEffects (ajax :: AJAX, console :: CONSOLE | eff)

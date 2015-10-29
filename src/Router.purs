@@ -97,7 +97,6 @@ ui = parentComponent render eval
       handleRoute route
       pure next
 
-    handleRoute :: Routes -> _
     handleRoute (Sessions view) = void $
       query' pathToSessions Sessions.Slot (action (left <<< Sessions.Routed view))
     handleRoute _ =

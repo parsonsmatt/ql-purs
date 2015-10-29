@@ -7,8 +7,6 @@ import Data.Array
 import Control.Monad
 import Data.Functor.Coproduct
 import Data.Generic
-import Data.Date
-import Data.Date.UTC
 import Control.Monad.Eff
 
 import Control.Monad.Free (liftFI)
@@ -23,7 +21,10 @@ import qualified Halogen.Themes.Bootstrap3 as B
 
 import qualified QuickLift.Api as API
 import QuickLift.Model
+
 import Types
+import Types.Date
+
 import HasLink
 
 import qualified Component.Sessions.New as New
@@ -34,13 +35,13 @@ data Input a
 
 type State =
   { currentCrud :: CRUD 
-  , loadedSessions :: Maybe (Array Session)
+  , loadedSessions :: Array Session
   }
 
 initialState :: forall eff. CRUD -> StateP eff
 initialState view = installedState
   { currentCrud: view
-  , loadedSessions: Nothing
+  , loadedSessions: []
   }
 
 data Slot = Slot
@@ -66,13 +67,12 @@ ui = parentComponent render eval
         , currentView st.currentCrud st
         ]
 
+    currentView :: CRUD -> State -> _
     currentView Index st =
       indexPage st
     currentView (Show n) st = 
-      let session = do
-            sessions <- st.loadedSessions
-            i <- findIndex (\(Session s) -> s.id == n) sessions
-            sessions !! i
+      let maybeIndex = findIndex (\(Session s) -> s.id == n) st.loadedSessions 
+          session = maybeIndex >>= \i -> st.loadedSessions !! i
        in showPage n session
     currentView New _ =
       EX.slot New.ui New.initialState New.Slot
@@ -80,20 +80,19 @@ ui = parentComponent render eval
     eval :: EvalParent Input State New.State Input New.Input (QLEff eff) New.Slot
     eval (Routed crud n) = do
       modify (_{ currentCrud = crud })
-      when (crud == Index) (void (pure (action LoadSessions)))
       pure n
 
     eval (LoadSessions a) = do
       s <- liftH (liftAff' (API.getUserSessions 1))
-      modify (_{ loadedSessions = s })
+      modify (_{ loadedSessions = join $ maybeToArray s })
       pure a
 
 
 
 indexPage st =
-  let sessions = case map linkSession <$> st.loadedSessions of
-                      Nothing -> H.p_ [ H.text "No sessions." ]
-                      Just s -> H.ul_ (map (H.li_ <<< pure) s)
+  let sessions = case map linkSession st.loadedSessions of
+                      [] -> H.p_ [ H.text "No sessions." ]
+                      xs -> H.ul_ (map (H.li_ <<< pure) xs)
    in H.div_
     [ newButton
     , loadButton
@@ -101,22 +100,28 @@ indexPage st =
     ]
 
 loadButton =
-  H.a [ E.onClick $ E.input_ LoadSessions ] [ H.text "Loaaaad" ]
+  H.button [ P.classes [ B.btn, B.btnSuccess ], E.onClick $ E.input_ LoadSessions ]
+    [ H.text "Loaaaad" ]
 
 linkSession (Session s) =
-  H.a [ P.href (link (Sessions (Show s.id))) ]
-    [ H.text (renderDate s.date) ]
+  H.a [ P.href (link (Sessions </> Show s.id)) ]
+    [ H.text (yyyy_mm_dd s.date) ]
 
 showPage :: Int -> Maybe Session -> _
 showPage n (Just (Session s)) =
   H.div_ 
-    [ H.h1_ [ H.text $ renderDate s.date ]
+    [ H.h1_ [ H.text $ yyyy_mm_dd s.date ]
     , H.p_ [ H.text s.text ]
     , newButton
+    ]
+showPage n Nothing = 
+  H.div_
+    [ H.h2_ [ H.text "hmm, not found... load it?" ]
+    , loadButton
     ]
 
 newButton = 
   H.p_
-    [ H.a [ P.href (link $ Sessions $ New), P.classes [B.btn, B.btnDefault] ]
+    [ H.a [ P.href (link (Sessions </> New)), P.classes [B.btn, B.btnDefault] ]
       [ H.text "New Session" ]
     ]

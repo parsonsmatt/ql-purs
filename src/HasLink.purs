@@ -16,3 +16,6 @@ instance crudHasLink :: HasLink CRUD where
   link Index = ""
   link New = "/new"
   link (Show n) = "/" ++ show n
+
+(</>) :: forall a b. (HasLink a, HasLink b) => (a -> b) -> a -> b
+(</>) = ($)
