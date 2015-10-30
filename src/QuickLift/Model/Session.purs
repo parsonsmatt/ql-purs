@@ -44,6 +44,7 @@ instance requestableSession :: Requestable Session where
 
 newtype ArrSession = ArrSession (Array Session)
 
+unArrSession :: ArrSession -> Array Session
 unArrSession (ArrSession a) = a
 
 instance isForeignArrSession :: IsForeign ArrSession where
