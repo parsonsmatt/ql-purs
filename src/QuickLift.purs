@@ -2,10 +2,14 @@ module QuickLift where
 
 import BigPrelude
 
+import Data.Foldable
+
 import Data.Int hiding (fromString)
 import Data.Functor.Coproduct (Coproduct(..), left)
 import Control.Monad
 import Data.Array
+import Control.Monad.Eff.Unsafe
+import qualified Routing.Hash.Aff as R
 
 import Halogen
 import qualified Halogen.Extra as EX
@@ -14,7 +18,6 @@ import qualified Halogen.HTML.Properties.Indexed as P
 import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
-import Control.Monad.Eff.Unsafe
 
 import qualified Form as F
 import QuickLift.Model
@@ -46,7 +49,6 @@ initialState =
     , userId: 1
     , id: -1
     }
-  , success: Nothing
   }
 
 type State =
@@ -54,7 +56,6 @@ type State =
   , currentUser :: Maybe User
   , loadedSessions :: Array Session
   , currentSession :: Session
-  , success :: Maybe Int
   }
 
 ui :: forall eff. Component State Input (QLEff eff)
@@ -85,14 +86,22 @@ ui = component render eval
       pure a
 
     handleNewSession Submit = do
-      st <- gets _.currentSession
-      result <- liftAff' (API.postSession st)
-      modify (_{ success = result })
+      { currentSession: Session st, loadedSessions: ss } <- get
+      result <- liftAff' (API.postSession (Session st))
+      for_ result \n -> do
+        let saved = Session (st { id = n })
+            rt = Sessions </> Show n
+        modify (_{ currentPage = rt
+                 , currentSession = saved
+                 , loadedSessions = saved : ss
+                 })
+        liftAff' (updateUrl rt)
 
     handleNewSession (EditDate str) = do
       Session s <- gets _.currentSession
       let d = fromMaybe s.date (dateFromString str)
-      when (s.date /= d) (modify (_ { currentSession = Session (s { date = d })}))
+      when (s.date /= d) do
+        modify (_ { currentSession = Session (s { date = d })})
 
     handleNewSession (EditText str) = do
       Session s <- gets _.currentSession
@@ -135,7 +144,6 @@ view (Sessions New) st =
       [ F.textarea "session" "Session:" (getSessionText $ st.currentSession) (NewSession <<< EditText)
       , F.date "date" "Date:" (yyyy_mm_dd <<< getSessionDate $ st.currentSession) (NewSession <<< EditDate)
       ]
-    , succLink st.success
     ]
 
 succLink :: forall a. Maybe Int -> HTML a Input

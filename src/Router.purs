@@ -11,6 +11,8 @@ import Control.Monad.Eff.Exception (EXCEPTION())
 import Data.Int (floor)
 import Routing
 import Routing.Match
+import Routing.Hash.Aff
+
 import Routing.Match.Class
 
 import Control.Monad.Aff.AVar
@@ -42,5 +44,3 @@ routeSignal driver = do
 redirects :: forall eff. Driver Input eff -> Maybe Routes -> Routes -> Aff (Effects eff) Unit
 redirects driver _ =
   driver <<< action <<< Goto
-
-

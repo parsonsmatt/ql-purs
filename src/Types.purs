@@ -2,11 +2,13 @@ module Types where
 
 import Prelude
 
+import Data.String (drop)
 import DOM
 import Halogen
 import Control.Monad.Aff (Aff())
 import Network.HTTP.Affjax (AJAX())
 import Control.Monad.Eff.Console
+import Routing.Hash.Aff
 
 data CRUD
   = Index
@@ -23,6 +25,9 @@ data Routes
   = Profile
   | Sessions CRUD
   | Home
+
+updateUrl :: forall e. Routes -> Aff (dom :: DOM | e) Unit
+updateUrl = setHash <<< drop 1 <<< link
 
 type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState :: s } 
 
