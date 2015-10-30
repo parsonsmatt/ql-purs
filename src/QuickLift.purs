@@ -69,6 +69,9 @@ ui = component render eval
     eval :: Eval Input State Input (QLEff eff)
     eval (Goto route next) = do
       modify (_ { currentPage = route })
+      case route of
+           Sessions Index -> eval (LoadSessions unit)
+           _ -> pure unit
       pure next
 
     eval (GetUser i n) = do
@@ -91,10 +94,10 @@ ui = component render eval
       for_ result \n -> do
         let saved = Session (st { id = n })
             rt = Sessions </> Show n
-        modify (_{ currentPage = rt
-                 , currentSession = saved
+        modify (_{ currentSession = saved
                  , loadedSessions = saved : ss
                  })
+        eval (Goto (Sessions </> Show n) unit)
         liftAff' (updateUrl rt)
 
     handleNewSession (EditDate str) = do
@@ -107,7 +110,7 @@ ui = component render eval
       Session s <- gets _.currentSession
       modify (_ { currentSession = Session (s { text = str })})
 
-view :: forall a. Routes -> State -> HTML a Input
+view :: Routes -> State -> ComponentHTML Input
 view Home _ = 
   H.div_
   [ H.h1_ [ H.text "QuickLift" ]
@@ -120,7 +123,7 @@ view Profile st =
     , H.p_ [ H.text "what a nice profile!" ]
     , H.div_ (printUser st.currentUser)
     , H.a [ E.onClick $ E.input_ (GetUser 1) ] 
-      [ H.text "Get a user maybe?" ]
+      [ H.text "Login (lol)" ]
     ]
 
 view (Sessions Index) st =
@@ -190,7 +193,7 @@ showPage n Nothing =
 printUser :: forall a b. Maybe User -> Array (HTML a b)
 printUser Nothing = []
 printUser (Just (User user)) =
-  [ H.p_ [ H.text ("It's " <> user.name <> "!") ]
+  [ H.p_ [ H.text ("Hello, " <> user.name <> "!") ]
   , H.a [ P.href (link $ Sessions Index) ]
     [ H.text "Go to sessions" ]
   ]
