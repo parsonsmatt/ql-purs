@@ -11,8 +11,6 @@ import qualified Halogen.Themes.Bootstrap3 as B
 import qualified Halogen.HTML.Events.Indexed as E
 
 import Types
-import HasLink
-
 
 row :: forall a b. Array (HTML a b) -> HTML a b
 row = H.div [ P.class_ B.row ]
@@ -20,9 +18,10 @@ row = H.div [ P.class_ B.row ]
 col :: forall a b. ClassName -> Array (HTML a b) -> HTML a b
 col sz = H.div [ P.class_ sz ]
 
+col' :: forall a b. Array ClassName -> Array (HTML a b) -> HTML a b
 col' szs = H.div [ P.classes szs ]
 
---defaultLayout :: forall a b. Array (HTML a b) -> HTML a b
+defaultLayout :: forall a b. Array (HTML a b) -> HTML a b
 defaultLayout page =
   H.div [ P.class_ B.container ]
     [ header
@@ -34,12 +33,11 @@ defaultLayout page =
       ]
     ]
 
---container :: forall a b. _ -> Array (HTML a b) -> HTML a b
 container attrs = H.div (P.class_ B.container : attrs)
 
---container_ :: forall a b. Array (HTML a b) -> HTML a b
 container_ = container []
 
+header :: forall a b. HTML a b
 header =
   H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarInverse] ]
     [ container_

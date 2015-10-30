@@ -2,6 +2,7 @@ module Types where
 
 import Prelude
 
+import DOM
 import Halogen
 import Control.Monad.Aff (Aff())
 import Network.HTTP.Affjax (AJAX())
@@ -25,6 +26,21 @@ data Routes
 
 type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState :: s } 
 
-type QLApp = QLEff ()
 type QLEff eff = Aff (QL eff) 
 type QL eff = HalogenEffects (ajax :: AJAX, console :: CONSOLE | eff)
+
+class HasLink a where
+  link :: a -> String
+
+instance routesHasLink :: HasLink Routes where
+  link Profile = "#/profile"
+  link (Sessions crud) = "#/sessions" ++ link crud
+  link Home = "#/"
+
+instance crudHasLink :: HasLink CRUD where
+  link Index = ""
+  link New = "/new"
+  link (Show n) = "/" ++ show n
+
+(</>) :: forall a b. (HasLink a, HasLink b) => (a -> b) -> a -> b
+(</>) = ($)
