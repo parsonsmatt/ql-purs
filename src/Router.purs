@@ -23,8 +23,10 @@ import Control.Monad.Aff (Aff(), forkAff)
 routing :: Match Routes
 routing = profile
       <|> sessions
+      <|> register
       <|> home
   where
+    register = Register <$ route "register"
     profile = Profile <$ route "profile"
     home = Home <$ lit ""
     sessions = Sessions <$> (route "sessions" *> parseCRUD)

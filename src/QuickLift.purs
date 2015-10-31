@@ -32,11 +32,22 @@ data Input a
   | GetUser Int a
   | LoadSessions a
   | NewSession NewSessionInput a
+  | Register RegisterInput a
 
 data NewSessionInput
   = Submit
   | EditDate String
   | EditText String
+
+data RegisterInput
+  = Submit
+  | EditEmail String
+  | EditName String
+
+data FormInput a
+  = Submit
+  | Edit Field
+
 
 initialState :: State
 initialState =
@@ -125,6 +136,11 @@ view Profile st =
     , H.a [ E.onClick $ E.input_ (GetUser 1) ] 
       [ H.text "Login (lol)" ]
     ]
+
+view Register st =
+  H.div_
+    [ H.h1_ [ H.text "Register" ]
+    , F.form ()]
 
 view (Sessions Index) st =
   let sessions = case map linkSession st.loadedSessions of

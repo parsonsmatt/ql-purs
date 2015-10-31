@@ -25,6 +25,7 @@ data Routes
   = Profile
   | Sessions CRUD
   | Home
+  | Register
 
 updateUrl :: forall e. Routes -> Aff (dom :: DOM | e) Unit
 updateUrl = setHash <<< drop 1 <<< link
@@ -41,6 +42,7 @@ instance routesHasLink :: HasLink Routes where
   link Profile = "#/profile"
   link (Sessions crud) = "#/sessions" ++ link crud
   link Home = "#/"
+  link Register = "#/register"
 
 instance crudHasLink :: HasLink CRUD where
   link Index = ""
