@@ -13,6 +13,8 @@ import Network.HTTP.Affjax (AJAX())
 import Control.Monad.Eff.Console
 import Routing.Hash.Aff
 
+import Form.Types
+
 data CRUD
   = Index
   | Show Int

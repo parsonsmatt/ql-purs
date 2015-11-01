@@ -2,7 +2,7 @@ module Layout where
 
 import BigPrelude
 
-import Data.Array
+import Data.Array hiding ((..))
 
 import Halogen.HTML.Indexed (HTML(), ClassName())
 import qualified Halogen.HTML.Indexed as H

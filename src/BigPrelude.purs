@@ -4,6 +4,8 @@ module BigPrelude
   , module Data.Maybe.Unsafe
   , module Data.Either
   , module Control.Monad.Eff
+  , module Optic.Lens
+  , module Optic.Core
   , module Data.Functor
   , module Control.Alt
   , module Data.Tuple
@@ -34,6 +36,8 @@ import qualified Data.List as L
 import Data.List (List())
 import Control.Monad.Eff
 import Control.Monad.Eff.Class
+import Optic.Lens
+import Optic.Core
 
 eitherToMaybe :: forall a b. Either b a -> Maybe a
 eitherToMaybe (Left _) =

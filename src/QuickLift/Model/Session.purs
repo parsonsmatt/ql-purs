@@ -6,7 +6,7 @@ import Optic.Lens
 import Optic.Core
 
 import qualified Data.String as Str
-import Unsafe.Coerce
+import Control.Monad.Eff.Unsafe
 
 import Data.Foreign hiding (isNull, isArray)
 import Data.Foreign.Class
@@ -29,6 +29,14 @@ newtype Session
   , text :: String
   , id :: Int
   , userId :: Int
+  }
+
+emptySession :: Session
+emptySession = Session
+  { date: runPure (unsafeInterleaveEff now)
+  , text: ""
+  , userId: 1
+  , id: -1
   }
 
 instance encodeSession :: EncodeJson Session where
