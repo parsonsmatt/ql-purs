@@ -49,8 +49,12 @@ renderForm
 renderForm _data eventType fields =
   execWriter (runReaderT fields (Tuple _data eventType)) ++ [submitButton_ (eventType Submit)]
 
+emailField = field P.InputEmail 
+textField = field P.InputText
+passwordField = field P.InputPassword
+
 field
-  :: forall a f v
+  :: forall a b f v
    . P.InputType
   -> String
   -> String

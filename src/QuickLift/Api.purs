@@ -46,3 +46,8 @@ postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Maybe Int)
 postRegistration u = do
   res <- qlReq "users" u
   pure (floor <$> (eitherToMaybe <<< read $ res.response))
+
+postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe User)
+postAuthentication auth = do
+  res <- qlReq "authentication" auth
+  pure (eitherToMaybe <<< read $ res.response)

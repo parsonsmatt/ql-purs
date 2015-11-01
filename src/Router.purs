@@ -23,8 +23,10 @@ routing :: Match Routes
 routing = profile
       <|> sessions
       <|> register
+      <|> login
       <|> home
   where
+    login = Login <$ route "login"
     register = Registration <$ route "register"
     profile = Profile <$ route "profile"
     home = Home <$ lit ""

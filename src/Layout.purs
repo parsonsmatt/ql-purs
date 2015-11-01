@@ -51,7 +51,7 @@ header =
         ]
       , H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
         [ H.li_ 
-          [ H.a [ P.href (link $ Home) ] 
+          [ H.a [ P.href (link $ Login) ] 
                 [ H.text "Log in" ] 
           ]
         , H.li_ 

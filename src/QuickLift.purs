@@ -12,6 +12,7 @@ import Data.Int hiding (fromString)
 import Data.Functor.Coproduct (Coproduct(..), left)
 import Control.Monad
 import Data.Array hiding ((..))
+import Control.Monad.Eff.Console
 import Control.Monad.Eff.Unsafe
 import qualified Routing.Hash.Aff as R
 
@@ -40,6 +41,7 @@ data Input a
   | LoadSessions a
   | NewSession (FormInput Session) a
   | Register (FormInput UserReg) a
+  | Authenticate (FormInput UserAuth) a
 
 type State =
   { currentPage :: Routes
@@ -47,6 +49,7 @@ type State =
   , loadedSessions :: Array Session
   , currentSession :: Session
   , registration :: UserReg
+  , authentication :: UserAuth
   }
 
 initialState :: State
@@ -61,6 +64,7 @@ initialState =
     , id: -1
     }
   , registration: emptyReg
+  , authentication: emptyAuth
   }
 
 stRegistration :: LensP State UserReg
@@ -86,6 +90,9 @@ stCurrentUser =
   lens
     (_.currentUser)
     (_ { currentUser = _ })
+
+stAuthentication :: LensP State UserAuth
+stAuthentication = lens _.authentication _ { authentication = _ }
 
 ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
@@ -122,6 +129,8 @@ ui = component render eval
       handleRegistration inp
       pure a
 
+    eval (Authenticate inp a) = handleAuthentication inp $> a
+
     handleNewSession Submit = do
       sess <- gets _.currentSession
       result <- liftAff' (API.postSession sess)
@@ -143,9 +152,21 @@ ui = component render eval
       reg <- gets _.registration
       res <- liftAff' (API.postRegistration reg)
       for_ res \n -> do
-        let saved = emptyUser # (_User .. email .~ (reg ^. _UserReg .. email))
+        let saved = emptyUser # (_User .. name .~ (reg ^. _UserReg .. name))
+                              # (_User .. email .~ (reg ^. _UserReg .. email))
                               # (_User .. id_ .~ n)
         modify (stCurrentUser ?~ saved)
+        eval (Goto Profile unit)
+        liftAff' (updateUrl Profile)
+
+    handleAuthentication (Edit fn) = modify (stAuthentication %~ fn)
+
+    handleAuthentication Submit = do
+      auth <- gets _.authentication
+      res <- liftAff' (API.postAuthentication auth)
+      liftEff' (log .. show $ res)
+      for_ res \user -> do
+        modify (stCurrentUser ?~ user)
         eval (Goto Profile unit)
         liftAff' (updateUrl Profile)
 
@@ -163,8 +184,6 @@ renderView Profile st =
     [ H.h1_ [ H.text "Home" ]
     , H.p_ [ H.text "what a nice profile!" ]
     , H.div_ (printUser st.currentUser)
-    , H.a [ E.onClick $ E.input_ (GetUser 1) ] 
-      [ H.text "Login (lol)" ]
     ]
 
 
@@ -206,9 +225,10 @@ renderView (Sessions New) st =
 renderView Registration st = 
   H.div_ $
     WF.renderForm st.registration Register do
-      WF.field P.InputText "email" "Email:" (_UserReg .. email) validEmail
-      WF.field P.InputPassword "password" "Password:" (_UserReg .. password) validPassword
-      WF.field P.InputPassword "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
+      WF.textField "name" "Name:" (_UserReg .. name) Right
+      WF.emailField "email" "Email:" (_UserReg .. email) validEmail
+      WF.passwordField "password" "Password:" (_UserReg .. password) validPassword
+      WF.passwordField "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
   where
     validPassword str
       | Str.length str < 6 = Left "Password must be at least 6 characters"
@@ -218,6 +238,20 @@ renderView Registration st =
       | otherwise = Left "Password must match confirmation"
     validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
+renderView Login st = 
+  H.div_ $
+    WF.renderForm st.authentication Authenticate do
+      WF.emailField "email" "Email:" (_UserAuth .. email) validEmail
+      WF.passwordField "password" "Password:" (_UserAuth .. password) validPassword
+      WF.passwordField "confirm" "Confirmation:" (_UserAuth .. confirmation) validConfirmation
+  where
+    validPassword str
+      | Str.length str < 6 = Left "Password must be at least 6 characters"
+      | otherwise = Right str
+    validConfirmation str
+      | str == st ^. stAuthentication .. _UserAuth .. password = Right str
+      | otherwise = Left "Password must match confirmation"
+    validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 succLink :: forall a. Maybe Int -> HTML a Input
 succLink Nothing =
