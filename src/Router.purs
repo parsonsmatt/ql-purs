@@ -3,7 +3,6 @@ module Router where
 import BigPrelude
 
 import Halogen
-
 import QuickLift
 
 import DOM (DOM())
@@ -26,7 +25,7 @@ routing = profile
       <|> register
       <|> home
   where
-    register = Register <$ route "register"
+    register = Registration <$ route "register"
     profile = Profile <$ route "profile"
     home = Home <$ lit ""
     sessions = Sessions <$> (route "sessions" *> parseCRUD)
@@ -46,3 +45,4 @@ routeSignal driver = do
 redirects :: forall eff. Driver Input eff -> Maybe Routes -> Routes -> Aff (Effects eff) Unit
 redirects driver _ =
   driver <<< action <<< Goto
+

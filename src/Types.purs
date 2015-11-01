@@ -2,6 +2,9 @@ module Types where
 
 import Prelude
 
+import qualified Halogen.HTML.Indexed as H
+import qualified Halogen.HTML.Properties.Indexed as P
+
 import Data.String (drop)
 import DOM
 import Halogen
@@ -25,7 +28,7 @@ data Routes
   = Profile
   | Sessions CRUD
   | Home
-  | Register
+  | Registration
 
 updateUrl :: forall e. Routes -> Aff (dom :: DOM | e) Unit
 updateUrl = setHash <<< drop 1 <<< link
@@ -42,7 +45,7 @@ instance routesHasLink :: HasLink Routes where
   link Profile = "#/profile"
   link (Sessions crud) = "#/sessions" ++ link crud
   link Home = "#/"
-  link Register = "#/register"
+  link Registration = "#/register"
 
 instance crudHasLink :: HasLink CRUD where
   link Index = ""
@@ -51,3 +54,6 @@ instance crudHasLink :: HasLink CRUD where
 
 (</>) :: forall a b. (HasLink a, HasLink b) => (a -> b) -> a -> b
 (</>) = ($)
+
+linkTo :: Routes -> String -> HTML _ _
+linkTo r t = H.a [ P.href (link r) ] [ H.text t ]

@@ -1,6 +1,7 @@
 module QuickLift.Model 
   ( module QuickLift.Model.Session
   , module QuickLift.Model.User
+  , module QuickLift.Model.Registration
   ) where
 
 import BigPrelude
@@ -26,4 +27,4 @@ import Network.HTTP.Affjax.Response
 
 import QuickLift.Model.Session
 import QuickLift.Model.User
-
+import QuickLift.Model.Registration

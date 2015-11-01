@@ -4,10 +4,13 @@ import BigPrelude
 
 import Data.Foldable
 
+import Optic.Lens
+import Optic.Core
+
 import Data.Int hiding (fromString)
 import Data.Functor.Coproduct (Coproduct(..), left)
 import Control.Monad
-import Data.Array
+import Data.Array hiding ((..))
 import Control.Monad.Eff.Unsafe
 import qualified Routing.Hash.Aff as R
 
@@ -31,23 +34,20 @@ data Input a
   = Goto Routes a
   | GetUser Int a
   | LoadSessions a
-  | NewSession NewSessionInput a
-  | Register RegisterInput a
-
-data NewSessionInput
-  = Submit
-  | EditDate String
-  | EditText String
-
-data RegisterInput
-  = Submit
-  | EditEmail String
-  | EditName String
+  | NewSession (FormInput Session) a
+  | Register (FormInput UserReg) a
 
 data FormInput a
   = Submit
-  | Edit Field
+  | Edit (a -> a)
 
+type State =
+  { currentPage :: Routes
+  , currentUser :: Maybe User
+  , loadedSessions :: Array Session
+  , currentSession :: Session
+  , registration :: UserReg
+  }
 
 initialState :: State
 initialState =
@@ -60,27 +60,46 @@ initialState =
     , userId: 1
     , id: -1
     }
+  , registration: emptyReg
   }
 
-type State =
-  { currentPage :: Routes
-  , currentUser :: Maybe User
-  , loadedSessions :: Array Session
-  , currentSession :: Session
-  }
+stRegistration :: LensP State UserReg
+stRegistration =
+  lens
+    (_.registration)
+    (_ { registration = _ })
+
+stCurrentSession :: LensP State Session
+stCurrentSession =
+  lens
+    (_.currentSession)
+    (_ { currentSession = _ })
+
+stLoadedSessions :: LensP State (Array Session)
+stLoadedSessions =
+  lens 
+    (_.loadedSessions)
+    (_ { loadedSessions = _ })
+
+stCurrentUser :: LensP State (Maybe User)
+stCurrentUser =
+  lens
+    (_.currentUser)
+    (_ { currentUser = _ })
 
 ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
   where
     render state =
       L.defaultLayout
-        [ view state.currentPage state
+        [ renderView state.currentPage state
         ]
 
     eval :: Eval Input State Input (QLEff eff)
     eval (Goto route next) = do
       modify (_ { currentPage = route })
       case route of
+           Registration -> modify (stCurrentUser .~ Just emptyUser)
            Sessions Index -> eval (LoadSessions unit)
            _ -> pure unit
       pure next
@@ -92,43 +111,53 @@ ui = component render eval
 
     eval (LoadSessions a) = do
       s <- liftAff' (API.getUserSessions 1)
-      modify (_{ loadedSessions = join $ maybeToArray s })
+      modify (stLoadedSessions .~ (concat $ maybeToArray s))
       pure a
 
     eval (NewSession inp a) = do
       handleNewSession inp
       pure a
 
+    eval (Register inp a) = do
+      handleRegistration inp
+      pure a
+
     handleNewSession Submit = do
-      { currentSession: Session st, loadedSessions: ss } <- get
-      result <- liftAff' (API.postSession (Session st))
+      sess <- gets _.currentSession
+      result <- liftAff' (API.postSession sess)
       for_ result \n -> do
-        let saved = Session (st { id = n })
+        let saved' = sess # _Session .. id_ .~ n
             rt = Sessions </> Show n
-        modify (_{ currentSession = saved
-                 , loadedSessions = saved : ss
-                 })
-        eval (Goto (Sessions </> Show n) unit)
+        modify (stCurrentSession .~ saved')
+        modify (stLoadedSessions %~ (saved' :))
+        eval (Goto rt unit)
         liftAff' (updateUrl rt)
 
-    handleNewSession (EditDate str) = do
-      Session s <- gets _.currentSession
-      let d = fromMaybe s.date (dateFromString str)
-      when (s.date /= d) do
-        modify (_ { currentSession = Session (s { date = d })})
+    handleNewSession (Edit fn) = do
+      modify (stCurrentSession %~ fn)
 
-    handleNewSession (EditText str) = do
-      Session s <- gets _.currentSession
-      modify (_ { currentSession = Session (s { text = str })})
+    handleRegistration (Edit fn) = do
+      modify (stRegistration %~ fn)
 
-view :: Routes -> State -> ComponentHTML Input
-view Home _ = 
+    handleRegistration Submit = do
+      reg <- gets _.registration
+      res <- liftAff' (API.postRegistration reg)
+      for_ res \n -> do
+        let saved = emptyUser # (_User .. email .~ (reg ^. _UserReg .. email))
+                              # (_User .. id_ .~ n)
+        modify (stCurrentUser ?~ saved)
+        eval (Goto Profile unit)
+        liftAff' (updateUrl Profile)
+
+
+renderView :: Routes -> State -> ComponentHTML Input
+renderView Home _ = 
   H.div_
   [ H.h1_ [ H.text "QuickLift" ]
   , H.p_ [ H.text "Welcome to QuickLift" ]
   ]
 
-view Profile st =
+renderView Profile st =
   H.div_
     [ H.h1_ [ H.text "Home" ]
     , H.p_ [ H.text "what a nice profile!" ]
@@ -137,12 +166,7 @@ view Profile st =
       [ H.text "Login (lol)" ]
     ]
 
-view Register st =
-  H.div_
-    [ H.h1_ [ H.text "Register" ]
-    , F.form ()]
-
-view (Sessions Index) st =
+renderView (Sessions Index) st =
   let sessions = case map linkSession st.loadedSessions of
                       [] -> H.p_ [ H.text "No sessions." ]
                       xs -> H.ul_ (map (H.li_ <<< pure) xs)
@@ -152,17 +176,41 @@ view (Sessions Index) st =
     , sessions
     ]
 
-view (Sessions (Show n)) st =
+renderView (Sessions (Show n)) st =
   let maybeIndex = findIndex (\(Session s) -> s.id == n) st.loadedSessions 
       session = maybeIndex >>= \i -> st.loadedSessions !! i
    in showPage n session
 
-view (Sessions New) st =
+renderView (Sessions New) st =
   H.div_ 
     [ F.form (NewSession Submit)
-      [ F.textarea "session" "Session:" (getSessionText $ st.currentSession) (NewSession <<< EditText)
-      , F.date "date" "Date:" (yyyy_mm_dd <<< getSessionDate $ st.currentSession) (NewSession <<< EditDate)
+      [ F.textarea "session" "Session:" 
+        (st.currentSession ^. _Session .. text_)
+        (NewSession .. Edit .. set (_Session .. text_))
+      , F.date "date" "Date:" 
+        (yyyy_mm_dd (st.currentSession ^. _Session .. date_)) 
+        (NewSession .. Edit .. edDate)
       ]
+    ]
+  where
+    edDate :: String -> Session -> Session
+    edDate str sess =
+      let d = fromMaybe (sess ^. _Session .. date_) (dateFromString str)
+       in sess # _Session .. date_ .~ d 
+          
+renderView Registration st =
+  H.div_
+    [ F.form (Register Submit) 
+      [ F.email "email" "Email:"
+        (st ^. stRegistration .. _UserReg .. email)
+        (Register .. Edit .. set (_UserReg .. email))
+      , F.password "password" "Password:"
+        (st ^. stRegistration .. _UserReg .. password)
+        (Register .. Edit .. set (_UserReg .. password))
+      , F.password "confirm" "Confirmation:"
+        (st ^. stRegistration .. _UserReg .. passwordConfirmation)
+        (Register .. Edit .. set (_UserReg .. passwordConfirmation))
+      ] 
     ]
 
 succLink :: forall a. Maybe Int -> HTML a Input

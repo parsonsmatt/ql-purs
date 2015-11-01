@@ -21,7 +21,7 @@ col sz = H.div [ P.class_ sz ]
 col' :: forall a b. Array ClassName -> Array (HTML a b) -> HTML a b
 col' szs = H.div [ P.classes szs ]
 
-defaultLayout :: forall a b. Array (HTML a b) -> HTML a b
+--defaultLayout :: forall a b. Array (HTML a b) -> HTML a b
 defaultLayout page =
   H.div [ P.class_ B.container ]
     [ header
@@ -37,7 +37,7 @@ container attrs = H.div (P.class_ B.container : attrs)
 
 container_ = container []
 
-header :: forall a b. HTML a b
+--header :: forall a b. HTML a b
 header =
   H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarInverse] ]
     [ container_
@@ -51,12 +51,11 @@ header =
         ]
       , H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
         [ H.li_ 
-          [ H.a [ P.href "#" ] 
+          [ H.a [ P.href (link $ Home) ] 
                 [ H.text "Log in" ] 
           ]
         , H.li_ 
-          [ H.a [ P.href "#" ]
-                [ H.text "Sign up" ]
+          [ linkTo Registration "Sign up"
           ]
         ]
       ]

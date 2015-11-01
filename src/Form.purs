@@ -31,13 +31,21 @@ form onSubmit fields =
       (snoc fields (submitButton_ onSubmit)) 
     ]
 
-date id_ label value onChange =
+text = field P.InputText
+
+email = field P.InputEmail
+
+date = field P.InputDate
+
+password = field P.InputPassword
+
+field type_ id_ label value onChange = 
   H.div [ P.classes [ B.formGroup ] ]
     [ H.label [ P.for id_ ] [ H.text label ]
     , H.input 
       [ P.id_ id_
       , P.classes [ B.formControl ]
-      , P.inputType P.InputDate
+      , P.inputType type_
       , P.value value 
       , E.onValueChange (E.input onChange)
       ]

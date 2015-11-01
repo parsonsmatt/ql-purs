@@ -2,6 +2,9 @@ module QuickLift.Model.Session where
 
 import BigPrelude
 
+import Optic.Lens
+import Optic.Core
+
 import qualified Data.String as Str
 import Unsafe.Coerce
 
@@ -73,8 +76,14 @@ instance respondableSession :: Respondable Session where
 mkSession :: Date -> String -> Int -> Int -> Session
 mkSession d t i u = Session { date: d, text: t, id: i, userId: u }
 
-getSessionDate :: Session -> Date
-getSessionDate (Session d) = d.date
+_Session :: LensP Session { text :: String, date :: Date, userId :: Int, id :: Int }
+_Session f (Session o) = Session <$> f o
 
-getSessionText :: Session -> String
-getSessionText (Session s) = s.text
+date_ :: forall a b r. Lens { date :: a | r } { date :: b | r } a b
+date_ f o = o { date = _ } <$> f o.date
+
+userId :: forall a b r. Lens { userId :: a | r } { userId :: b | r } a b
+userId f o = o { userId = _ } <$> f o.userId
+
+text_ :: forall a b r. Lens { text :: a | r } { text :: b | r } a b
+text_ f o = o { text = _ } <$> f o.text
