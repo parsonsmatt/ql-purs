@@ -3,6 +3,7 @@ module QuickLift where
 import BigPrelude
 
 import Data.Foldable
+import qualified Data.String as Str
 
 import Optic.Lens
 import Optic.Core
@@ -202,11 +203,18 @@ renderView (Sessions New) st =
 renderView Registration st = 
   H.div_
     [ F.lensyForm (st.registration) Register
-      [ F.lensyEmail "email" "Email:" (_UserReg .. email)
+      [ F.lensyValidatingField
+          P.InputEmail 
+          "email" 
+          "Email:"
+          (_UserReg .. email)
+          validEmail
       , F.lensyPassword "password" "Password:" (_UserReg .. password)
       , F.lensyPassword "confirm" "Confirmation:" (_UserReg .. confirmation)
       ]
     ]
+  where
+    validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 
 succLink :: forall a. Maybe Int -> HTML a Input

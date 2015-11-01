@@ -36,6 +36,38 @@ lensyForm data_ eventType fields =
 lensyPassword = lensyField P.InputPassword
 lensyEmail = lensyField P.InputEmail
 
+lensyValidatingField
+  :: forall a f v.
+     P.InputType
+  -> String
+  -> String
+  -> LensP a String
+  -> (String -> Either String String)
+  -> a
+  -> (FormInput a -> Unit -> f Unit)
+  -> HTML v (f Unit)
+lensyValidatingField type_ id_ label lens_ validator data_ eventType = 
+  H.div [ P.classes classes ]
+    [ H.label [ P.for id_ ] [ H.text label ]
+    , H.input 
+      [ P.id_ id_
+      , P.classes [ B.formControl ]
+      , P.inputType type_
+      , P.value item 
+      , E.onValueChange (E.input (eventType .. Edit .. set lens_))
+      ]
+    , H.span_ [ H.text errMsg ]
+    ]
+  where
+    validation = validator item
+    item = data_ ^. lens_ 
+    classes = case validation of
+                   Left _ -> [ B.formGroup, B.hasError ]
+                   Right _ -> [ B.formGroup ]
+    errMsg = case validation of
+                  Left str -> str
+                  Right _ -> ""
+
 lensyField
   :: forall a f v.
      P.InputType
@@ -45,17 +77,7 @@ lensyField
   -> a
   -> (FormInput a -> Unit -> f Unit)
   -> HTML v (f Unit)
-lensyField type_ id_ label lens_ data_ eventType = 
-  H.div [ P.classes [ B.formGroup ] ]
-    [ H.label [ P.for id_ ] [ H.text label ]
-    , H.input 
-      [ P.id_ id_
-      , P.classes [ B.formControl ]
-      , P.inputType type_
-      , P.value (data_ ^. lens_)
-      , E.onValueChange (E.input (eventType .. Edit .. set lens_))
-      ]
-    ]
+lensyField type_ id_ label lens_ data_ eventType = lensyValidatingField type_ id_ label lens_ Right data_ eventType
 
 form onSubmit fields =
   H.form_
