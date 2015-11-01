@@ -24,7 +24,8 @@ import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
 import qualified Form as F
-import Form (FormInput(..))
+import qualified Form.AForm as AF
+import Form.Types (FormInput(..))
 import QuickLift.Model
 import qualified QuickLift.Api as API
 import qualified Layout as L
@@ -202,13 +203,12 @@ renderView (Sessions New) st =
 
 
 renderView Registration st = 
-  H.div_
-    [ F.lensyForm (st.registration) Register
-      [ F.lensyEmail "email" "Email:" (_UserReg .. email)
-      , F.lensyPassword "password" "Password:" (_UserReg .. password) validPassword
-      , F.lensyPassword "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
-      ]
-    ]
+  H.div_ $
+    AF.renderForm st.registration Register $
+      (\e p c -> e .. p .. c)
+        <$> AF.field P.InputText "email" "Email:" (_UserReg .. email) validEmail
+        <*> AF.field P.InputPassword "password" "Password:" (_UserReg .. password) validPassword
+        <*> AF.field P.InputPassword "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
   where
     validPassword str
       | Str.length str < 6 = Left "Password must be at least 6 characters"
@@ -216,6 +216,7 @@ renderView Registration st =
     validConfirmation str
       | str == st ^. stRegistration .. _UserReg .. password = Right str
       | otherwise = Left "Password must match confirmation"
+    validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 
 succLink :: forall a. Maybe Int -> HTML a Input

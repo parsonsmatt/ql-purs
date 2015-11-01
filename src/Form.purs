@@ -22,17 +22,8 @@ import qualified Halogen.Themes.Bootstrap3 as B
 import qualified Halogen.HTML.Indexed as H
 
 import Halogen.HTML.Core (Prop(..), HTML(..))
+import Form.Types
 
-data FormInput a
-  = Submit
-  | Edit (a -> a)
-
-
-submitButton t h =
-  H.button [ E.onClick (\_ -> E.preventDefault $> E.stopPropagation $> action h), P.classes [ B.btn, B.btnPrimary ] ]
-    [ H.text t ]
-  
-submitButton_ = submitButton "Submit"
 
 lensyForm data_ eventType fields = 
   form (eventType Submit) (map (\f -> f data_ eventType) fields)
