@@ -204,18 +204,18 @@ renderView (Sessions New) st =
 renderView Registration st = 
   H.div_
     [ F.lensyForm (st.registration) Register
-      [ F.lensyValidatingField
-          P.InputEmail 
-          "email" 
-          "Email:"
-          (_UserReg .. email)
-          validEmail
-      , F.lensyPassword "password" "Password:" (_UserReg .. password)
-      , F.lensyPassword "confirm" "Confirmation:" (_UserReg .. confirmation)
+      [ F.lensyEmail "email" "Email:" (_UserReg .. email)
+      , F.lensyPassword "password" "Password:" (_UserReg .. password) validPassword
+      , F.lensyPassword "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
       ]
     ]
   where
-    validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
+    validPassword str
+      | Str.length str < 6 = Left "Password must be at least 6 characters"
+      | otherwise = Right str
+    validConfirmation str
+      | str == st ^. stRegistration .. _UserReg .. password = Right str
+      | otherwise = Left "Password must match confirmation"
 
 
 succLink :: forall a. Maybe Int -> HTML a Input

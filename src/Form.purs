@@ -2,6 +2,7 @@ module Form where
 
 import BigPrelude
 import Unsafe.Coerce
+import qualified Data.String as Str
 
 import Optic.Lens
 import Optic.Core
@@ -36,8 +37,19 @@ submitButton_ = submitButton "Submit"
 lensyForm data_ eventType fields = 
   form (eventType Submit) (map (\f -> f data_ eventType) fields)
 
-lensyPassword = lensyField P.InputPassword
-lensyEmail = lensyField P.InputEmail
+lensyPassword = lensyValidatingField P.InputPassword
+
+lensyEmail 
+  :: forall a f v
+   . String
+  -> String
+  -> LensP a String 
+  -> a 
+  -> (FormInput a -> Unit -> f Unit) 
+  -> HTML v (f Unit)
+lensyEmail id_ label lens_ = lensyValidatingField P.InputEmail id_ label lens_ validEmail
+  where
+    validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 lensyValidatingField
   :: forall a f v.
