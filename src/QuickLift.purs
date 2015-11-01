@@ -25,6 +25,7 @@ import qualified Halogen.Themes.Bootstrap3 as B
 
 import qualified Form as F
 import qualified Form.AForm as AF
+import qualified Form.WForm as WF
 import Form.Types (FormInput(..))
 import QuickLift.Model
 import qualified QuickLift.Api as API
@@ -204,11 +205,10 @@ renderView (Sessions New) st =
 
 renderView Registration st = 
   H.div_ $
-    AF.renderForm st.registration Register $
-      (\e p c -> e .. p .. c)
-        <$> AF.field P.InputText "email" "Email:" (_UserReg .. email) validEmail
-        <*> AF.field P.InputPassword "password" "Password:" (_UserReg .. password) validPassword
-        <*> AF.field P.InputPassword "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
+    WF.renderForm st.registration Register do
+      WF.field P.InputText "email" "Email:" (_UserReg .. email) validEmail
+      WF.field P.InputPassword "password" "Password:" (_UserReg .. password) validPassword
+      WF.field P.InputPassword "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
   where
     validPassword str
       | Str.length str < 6 = Left "Password must be at least 6 characters"
