@@ -3,8 +3,11 @@ module Form where
 import BigPrelude
 import Unsafe.Coerce
 
+import Optic.Lens
+import Optic.Core
+
 import Data.Tuple
-import Data.Array
+import Data.Array hiding ((..))
 import Data.Either
 import Data.Maybe
 
@@ -17,6 +20,8 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.Themes.Bootstrap3 as B
 import qualified Halogen.HTML.Indexed as H
 
+import Types
+
 import Halogen.HTML.Core (Prop(..), HTML(..))
 
 submitButton t h =
@@ -24,6 +29,33 @@ submitButton t h =
     [ H.text t ]
   
 submitButton_ = submitButton "Submit"
+
+lensyForm data_ eventType fields = 
+  form (eventType Submit) (map (\f -> f data_ eventType) fields)
+
+lensyPassword = lensyField P.InputPassword
+lensyEmail = lensyField P.InputEmail
+
+lensyField
+  :: forall a f v.
+     P.InputType
+  -> String
+  -> String
+  -> LensP a String
+  -> a
+  -> (FormInput a -> Unit -> f Unit)
+  -> HTML v (f Unit)
+lensyField type_ id_ label lens_ data_ eventType = 
+  H.div [ P.classes [ B.formGroup ] ]
+    [ H.label [ P.for id_ ] [ H.text label ]
+    , H.input 
+      [ P.id_ id_
+      , P.classes [ B.formControl ]
+      , P.inputType type_
+      , P.value (data_ ^. lens_)
+      , E.onValueChange (E.input (eventType .. Edit .. set lens_))
+      ]
+    ]
 
 form onSubmit fields =
   H.form_

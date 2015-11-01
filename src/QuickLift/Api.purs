@@ -42,13 +42,7 @@ qlReq p r = AJ.affjax (AJ.defaultRequest
                       }
                     )
                   
-postUser :: forall eff. User -> Aff (ajax :: AJAX | eff) (Maybe Int)
-postUser u = do
-  res <- qlReq "users" u
-  pure (floor <$> (eitherToMaybe <<< read $ res.response))
-
 postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Maybe Int)
 postRegistration u = do
-  res <- qlReq "register" u
+  res <- qlReq "users" u
   pure (floor <$> (eitherToMaybe <<< read $ res.response))
-   

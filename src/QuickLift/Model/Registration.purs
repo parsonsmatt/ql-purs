@@ -28,28 +28,28 @@ newtype UserReg
   = UserReg
   { email :: String
   , password :: String
-  , passwordConfirmation :: String
+  , confirmation :: String
   }
 
-_UserReg :: LensP UserReg { email :: String, password :: String, passwordConfirmation :: String }
+_UserReg :: LensP UserReg { email :: String, password :: String, confirmation :: String }
 _UserReg f (UserReg o) = UserReg <$> f o
 
 password :: forall a b r. Lens { password :: a | r } { password :: b | r } a b
 password f o = o { password = _ } <$> f o.password
 
-passwordConfirmation :: forall a b r. Lens { passwordConfirmation :: a | r } { passwordConfirmation :: b | r } a b
-passwordConfirmation f o = o { passwordConfirmation = _ } <$> f o.passwordConfirmation
+confirmation :: forall a b r. Lens { confirmation :: a | r } { confirmation :: b | r } a b
+confirmation f o = o { confirmation = _ } <$> f o.confirmation
 
 emptyReg :: UserReg
 emptyReg = UserReg
   { email: ""
   , password: ""
-  , passwordConfirmation: ""
+  , confirmation: ""
   }
 
 mkRegistration :: String -> String -> String -> UserReg
 mkRegistration e p pc =
-  UserReg { email: e, password: p, passwordConfirmation: pc }
+  UserReg { email: e, password: p, confirmation: pc }
 
 derive instance genericUserReg :: Generic UserReg
 
@@ -63,7 +63,7 @@ instance respondableUserReg :: Respondable UserReg where
   fromResponse json = mkRegistration
     <$> readProp "email" json
     <*> readProp "password" json
-    <*> readProp "passwordConfirmation" json
+    <*> readProp "confirmation" json
 
 instance requestableUserReg :: Requestable UserReg where
   toRequest s =
@@ -74,10 +74,8 @@ instance encodeUserReg :: EncodeJson UserReg where
   encodeJson (UserReg u) = 
        "email" := u.email
     ~> "password" := u.password
-    ~> "passwordconfirmation" := u.passwordConfirmation
+    ~> "confirmation" := u.confirmation
     ~> jsonEmptyObject
 
 instance decodeUserReg :: DecodeJson UserReg where
   decodeJson = gDecodeJson
-
-

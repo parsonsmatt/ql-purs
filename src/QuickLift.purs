@@ -37,10 +37,6 @@ data Input a
   | NewSession (FormInput Session) a
   | Register (FormInput UserReg) a
 
-data FormInput a
-  = Submit
-  | Edit (a -> a)
-
 type State =
   { currentPage :: Routes
   , currentUser :: Maybe User
@@ -157,6 +153,7 @@ renderView Home _ =
   , H.p_ [ H.text "Welcome to QuickLift" ]
   ]
 
+
 renderView Profile st =
   H.div_
     [ H.h1_ [ H.text "Home" ]
@@ -165,6 +162,7 @@ renderView Profile st =
     , H.a [ E.onClick $ E.input_ (GetUser 1) ] 
       [ H.text "Login (lol)" ]
     ]
+
 
 renderView (Sessions Index) st =
   let sessions = case map linkSession st.loadedSessions of
@@ -176,10 +174,12 @@ renderView (Sessions Index) st =
     , sessions
     ]
 
+
 renderView (Sessions (Show n)) st =
-  let maybeIndex = findIndex (\(Session s) -> s.id == n) st.loadedSessions 
-      session = maybeIndex >>= \i -> st.loadedSessions !! i
+  let maybeIndex = findIndex (eq n .. view (_Session .. id_)) st.loadedSessions 
+      session = maybeIndex >>= index (st ^. stLoadedSessions)
    in showPage n session
+
 
 renderView (Sessions New) st =
   H.div_ 
@@ -197,21 +197,17 @@ renderView (Sessions New) st =
     edDate str sess =
       let d = fromMaybe (sess ^. _Session .. date_) (dateFromString str)
        in sess # _Session .. date_ .~ d 
-          
-renderView Registration st =
+
+
+renderView Registration st = 
   H.div_
-    [ F.form (Register Submit) 
-      [ F.email "email" "Email:"
-        (st ^. stRegistration .. _UserReg .. email)
-        (Register .. Edit .. set (_UserReg .. email))
-      , F.password "password" "Password:"
-        (st ^. stRegistration .. _UserReg .. password)
-        (Register .. Edit .. set (_UserReg .. password))
-      , F.password "confirm" "Confirmation:"
-        (st ^. stRegistration .. _UserReg .. passwordConfirmation)
-        (Register .. Edit .. set (_UserReg .. passwordConfirmation))
-      ] 
+    [ F.lensyForm (st.registration) Register
+      [ F.lensyEmail "email" "Email:" (_UserReg .. email)
+      , F.lensyPassword "password" "Password:" (_UserReg .. password)
+      , F.lensyPassword "confirm" "Confirmation:" (_UserReg .. confirmation)
+      ]
     ]
+
 
 succLink :: forall a. Maybe Int -> HTML a Input
 succLink Nothing =
@@ -219,7 +215,6 @@ succLink Nothing =
 succLink (Just n) =
   H.a [ P.href (link (Sessions $ Show n)) ]
     [ H.text "asdfffff" ]
-
 
 
 linkSession :: forall a. Session -> HTML a Input
