@@ -24,6 +24,7 @@ import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
 import qualified Form as F
+import Form (FormInput(..))
 import QuickLift.Model
 import qualified QuickLift.Api as API
 import qualified Layout as L

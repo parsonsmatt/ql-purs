@@ -18,10 +18,6 @@ data CRUD
   | Show Int
   | New
 
-data FormInput a
-  = Submit
-  | Edit (a -> a)
-
 instance eqCrud :: Eq CRUD where
   eq Index Index = true
   eq New New = true

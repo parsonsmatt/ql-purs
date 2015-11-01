@@ -20,9 +20,12 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.Themes.Bootstrap3 as B
 import qualified Halogen.HTML.Indexed as H
 
-import Types
-
 import Halogen.HTML.Core (Prop(..), HTML(..))
+
+data FormInput a
+  = Submit
+  | Edit (a -> a)
+
 
 submitButton t h =
   H.button [ E.onClick (\_ -> E.preventDefault $> E.stopPropagation $> action h), P.classes [ B.btn, B.btnPrimary ] ]
