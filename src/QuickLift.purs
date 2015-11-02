@@ -52,6 +52,7 @@ ui = component render eval
            Registration -> modify (stCurrentUser .~ Just emptyUser)
            Sessions Index -> eval (LoadSessions unit)
            _ -> pure unit
+      liftAff' (updateUrl route)
       pure next
 
     eval (GetUser i n) = do
@@ -61,19 +62,14 @@ ui = component render eval
 
     eval (LoadSessions a) = do
       s <- liftAff' (API.getUserSessions 1)
-      modify (stLoadedSessions .~ (concat $ maybeToArray s))
+      modify .. set stLoadedSessions .. concat .. maybeToArray $ s
       pure a
 
-    eval (NewSession inp a) = do
-      handleNewSession inp
-      pure a
-
-    eval (Register inp a) = do
-      handleRegistration inp
-      pure a
-
+    eval (NewSession inp a) = handleNewSession inp $> a
+    eval (Register inp a) = handleRegistration inp $> a
     eval (Authenticate inp a) = handleAuthentication inp $> a
 
+    handleNewSession (Edit fn) = modify (stCurrentSession %~ fn)
     handleNewSession Submit = do
       sess <- gets _.currentSession
       result <- liftAff' (API.postSession sess)
@@ -83,27 +79,20 @@ ui = component render eval
         modify (stCurrentSession .~ saved')
         modify (stLoadedSessions %~ (saved' :))
         eval (Goto rt unit)
-        liftAff' (updateUrl rt)
 
-    handleNewSession (Edit fn) = do
-      modify (stCurrentSession %~ fn)
-
-    handleRegistration (Edit fn) = do
-      modify (stRegistration %~ fn)
-
+    handleRegistration (Edit fn) = modify (stRegistration %~ fn)
     handleRegistration Submit = do
       reg <- gets _.registration
       res <- liftAff' (API.postRegistration reg)
       for_ res \n -> do
-        let saved = emptyUser # (_User .. name .~ (reg ^. _UserReg .. name))
-                              # (_User .. email .~ (reg ^. _UserReg .. email))
-                              # (_User .. id_ .~ n)
+        let saved = User { name:  reg ^. _UserReg .. name
+                         , email: reg ^. _UserReg .. email
+                         , id:    n
+                         }
         modify (stCurrentUser ?~ saved)
         eval (Goto Profile unit)
-        liftAff' (updateUrl Profile)
 
     handleAuthentication (Edit fn) = modify (stAuthentication %~ fn)
-
     handleAuthentication Submit = do
       auth <- gets _.authentication
       res <- liftAff' (API.postAuthentication auth)
@@ -111,4 +100,3 @@ ui = component render eval
       for_ res \user -> do
         modify (stCurrentUser ?~ user)
         eval (Goto Profile unit)
-        liftAff' (updateUrl Profile)
