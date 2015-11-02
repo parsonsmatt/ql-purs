@@ -44,19 +44,12 @@ header =
       [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ] 
         [ H.text "QuickLift" ]
       , H.ul [ P.classes [ B.navbarNav, B.nav, B.navTabs] ]
-        [ H.li_ [ H.a [ P.href (link (Sessions </> New)) ]
-                [ H.text "Log a Session" ] ]
-        , H.li_ [ H.a [ P.href (link Profile) ] 
-                [ H.text "See your Profile" ] ]
+        [ H.li_ [ linkTo (Sessions </> New) "Log a session" ]
+        , H.li_ [ linkTo Profile "See your Profile" ]
         ]
       , H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
-        [ H.li_ 
-          [ H.a [ P.href (link $ Login) ] 
-                [ H.text "Log in" ] 
-          ]
-        , H.li_ 
-          [ linkTo Registration "Sign up"
-          ]
+        [ H.li_ [ linkTo Login "Log in" ]
+        , H.li_ [ linkTo Registration "Sign up" ]
         ]
       ]
     ]

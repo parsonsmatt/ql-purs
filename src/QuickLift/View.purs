@@ -112,14 +112,12 @@ succLink :: forall a. Maybe Int -> HTML a Input
 succLink Nothing =
   H.p_ [ H.text "lol" ]
 succLink (Just n) =
-  H.a [ P.href (link (Sessions $ Show n)) ]
-    [ H.text "asdfffff" ]
+  linkTo (Sessions </> Show n) "asdfffff"
 
 
 linkSession :: forall a. Session -> HTML a Input
 linkSession (Session s) =
-  H.a [ P.href (link (Sessions </> Show s.id)) ]
-    [ H.text (yyyy_mm_dd s.date) ]
+  linkTo (Sessions </> Show s.id) (yyyy_mm_dd s.date)
 
 
 loadButton :: forall a. HTML a Input
@@ -152,6 +150,5 @@ printUser :: forall a b. Maybe User -> Array (HTML a b)
 printUser Nothing = []
 printUser (Just (User user)) =
   [ H.p_ [ H.text ("Hello, " <> user.name <> "!") ]
-  , H.a [ P.href (link $ Sessions Index) ]
-    [ H.text "Go to sessions" ]
+  , linkTo (Sessions Index) "Go to sessions"
   ]
