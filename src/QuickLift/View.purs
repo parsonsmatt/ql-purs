@@ -13,7 +13,6 @@ import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
 import qualified Form as F
-import qualified Form.AForm as AF
 import qualified Form.WForm as WF
 import Form.Types (FormInput(..))
 

@@ -1,6 +1,7 @@
 module BigPrelude
   ( module Prelude
   , module Data.Maybe
+  , module Data.Foldable
   , module Data.Maybe.Unsafe
   , module Data.Either
   , module Control.Monad.Eff
@@ -23,6 +24,7 @@ module BigPrelude
 import Prelude
 import Control.Bind
 import Data.Enum
+import Data.Foldable
 import Control.Plus
 import Control.Alt
 import Control.Apply

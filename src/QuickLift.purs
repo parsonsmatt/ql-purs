@@ -2,15 +2,12 @@ module QuickLift where
 
 import BigPrelude
 
-import Data.Foldable
 import qualified Data.String as Str
 
 import Data.Int hiding (fromString)
-import Data.Functor.Coproduct (Coproduct(..), left)
 import Control.Monad
 import Data.Array hiding ((..))
-import Control.Monad.Eff.Console
-import qualified Routing.Hash.Aff as R
+import qualified Control.Monad.Eff.Console as Console
 
 import Halogen
 import qualified Halogen.HTML.Indexed as H
@@ -19,9 +16,6 @@ import qualified Halogen.HTML.Events.Handler as E
 import qualified Halogen.HTML.Events.Indexed as E
 import qualified Halogen.Themes.Bootstrap3 as B
 
-import qualified Form as F
-import qualified Form.AForm as AF
-import qualified Form.WForm as WF
 import Form.Types (FormInput(..))
 
 import QuickLift.View
@@ -33,9 +27,6 @@ import qualified QuickLift.Api as API
 import qualified Layout as L
 
 import Types
-import Types.Date
-
-
 
 ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
@@ -96,7 +87,7 @@ ui = component render eval
     handleAuthentication Submit = do
       auth <- gets _.authentication
       res <- liftAff' (API.postAuthentication auth)
-      liftEff' (log .. show $ res)
+      liftEff' (Console.log .. show $ res)
       for_ res \user -> do
         modify (stCurrentUser ?~ user)
         eval (Goto Profile unit)
