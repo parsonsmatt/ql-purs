@@ -56,13 +56,12 @@ passwordField = field P.InputPassword
 field
   :: forall a b f v
    . P.InputType
-  -> String -- ID
-  -> String -- label
-  -> LensP source a -- lens into containing data structure
-  -> (a -> String) -- rendering data into string
-  -> (String -> Either String a) -- validation function
+  -> String
+  -> String
+  -> LensP a String
+  -> (String -> Either String String)
   -> WForm v f a
-field inpType id_ label lens_ render validator = do
+field inpType id_ label lens_ validator = do
     Tuple data_ eventType <- ask
     let item = data_ ^. lens_
         validation = validator item
@@ -72,18 +71,20 @@ field inpType id_ label lens_ render validator = do
         errMsg = case validation of
                       Left str -> str
                       Right _ -> ""
-        html =
-          H.div [ P.classes classes ]
-            [ H.label [ P.for id_ ] [ H.text label ]
-            , H.input
-              [ P.id_ id_
-              , P.classes [ B.formControl ]
-              , P.inputType inpType
-              , P.value (render item)
-              , E.onValueChange (E.input (eventType .. Edit .. \str -> either id (set lens_ str) (validator str)))
-              ]
-            , H.span_ [ H.text errMsg ]
-            ]
-    tell [html]
+    tell [html data_ eventType errMsg classes item]
     -- TODO: handle this better
     return (unsafeCoerce item)
+  where
+    html :: a -> FormAction f a -> String -> _ -> String -> HTML v (f Unit)
+    html data_ eventType errMsg classes item = 
+      H.div [ P.classes classes ]
+        [ H.label [ P.for id_ ] [ H.text label ]
+        , H.input 
+          [ P.id_ id_
+          , P.classes [ B.formControl ]
+          , P.inputType inpType
+          , P.value item 
+          , E.onValueChange (E.input (eventType .. Edit .. set lens_))
+          ]
+        , H.span_ [ H.text errMsg ]
+        ]
