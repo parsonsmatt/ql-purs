@@ -3,7 +3,6 @@ module QuickLift.Model.UserAuth where
 import BigPrelude
 
 import qualified Data.String as Str
-import Unsafe.Coerce
 
 import Optic.Lens
 import Optic.Core

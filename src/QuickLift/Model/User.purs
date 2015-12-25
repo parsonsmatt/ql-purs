@@ -2,7 +2,7 @@ module QuickLift.Model.User where
 
 import BigPrelude
 
-import qualified Data.String as Str
+import Data.String as Str
 import Unsafe.Coerce
 
 import Optic.Lens
@@ -12,7 +12,7 @@ import Data.Foreign hiding (isNull, isArray)
 import Data.Foreign.Class
 import Data.Generic
 import Data.Date hiding (fromString)
-import qualified Data.Date as Date
+import Data.Date as Date
 import Data.Date.UTC
 
 import Data.Argonaut.Combinators
