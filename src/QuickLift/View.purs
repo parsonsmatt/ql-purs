@@ -78,20 +78,20 @@ renderView (Sessions New) st =
 
 
 renderView Registration st = 
-  H.div_ $
-    WF.renderForm st.registration Register do
-      WF.textField "name" "Name:" (_UserReg .. name) Right
-      WF.emailField "email" "Email:" (_UserReg .. email) validEmail
-      WF.passwordField "password" "Password:" (_UserReg .. password) validPassword
-      WF.passwordField "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
-  where
-    validPassword str
-      | Str.length str < 6 = Left "Password must be at least 6 characters"
-      | otherwise = Right str
-    validConfirmation str
-      | str == st ^. stRegistration .. _UserReg .. password = Right str
-      | otherwise = Left "Password must match confirmation"
-    validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
+    H.div_ $
+        WF.renderForm st.registration Register do
+            WF.textField "name" "Name:" (_UserReg .. name) Right
+            WF.emailField "email" "Email:" (_UserReg .. email) validEmail
+            WF.passwordField "password" "Password:" (_UserReg .. password) validPassword
+            WF.passwordField "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
+    where
+      validPassword str
+          | Str.length str < 6 = Left "Password must be at least 6 characters"
+          | otherwise = Right str
+      validConfirmation str
+          | str == st ^. stRegistration .. _UserReg .. password = Right str
+          | otherwise = Left "Password must match confirmation"
+      validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 renderView Login st = 
   H.div_ $

@@ -25,12 +25,12 @@ import Network.HTTP.Affjax.Request
 import Network.HTTP.Affjax.Response
 
 newtype UserReg
-  = UserReg
-  { email :: String
-  , name :: String
-  , password :: String
-  , confirmation :: String
-  }
+    = UserReg
+    { email :: String
+    , name :: String
+    , password :: String
+    , confirmation :: String
+    }
 
 _UserReg :: LensP UserReg { email :: String, password :: String, confirmation :: String, name :: String }
 _UserReg f (UserReg o) = UserReg <$> f o
@@ -43,15 +43,15 @@ confirmation f o = o { confirmation = _ } <$> f o.confirmation
 
 emptyReg :: UserReg
 emptyReg = UserReg
-  { email: ""
-  , name: ""
-  , password: ""
-  , confirmation: ""
-  }
+    { email: ""
+    , name: ""
+    , password: ""
+    , confirmation: ""
+      }
 
 mkRegistration :: String -> String -> String -> String -> UserReg
 mkRegistration e p pc n =
-  UserReg { email: e, password: p, confirmation: pc, name: n }
+    UserReg { email: e, password: p, confirmation: pc, name: n }
 
 derive instance genericUserReg :: Generic UserReg
 
@@ -60,26 +60,26 @@ instance showUserReg :: Show UserReg where show = gShow
 instance eqUserReg :: Eq UserReg where eq = gEq
 
 instance respondableUserReg :: Respondable UserReg where
-  responseType =
-    JSONResponse
-  fromResponse json = mkRegistration
-    <$> readProp "email" json
-    <*> readProp "password" json
-    <*> readProp "confirmation" json
-    <*> readProp "name" json
+    responseType =
+        JSONResponse
+    fromResponse json = mkRegistration
+        <$> readProp "email" json
+        <*> readProp "password" json
+        <*> readProp "confirmation" json
+        <*> readProp "name" json
 
 instance requestableUserReg :: Requestable UserReg where
-  toRequest s =
-    let str = printJson (encodeJson s) :: String
-     in toRequest str
+    toRequest s =
+        let str = printJson (encodeJson s) :: String
+         in toRequest str
 
 instance encodeUserReg :: EncodeJson UserReg where
-  encodeJson (UserReg u) = 
-       "email" := u.email
-    ~> "password" := u.password
-    ~> "confirmation" := u.confirmation
-    ~> "name" := u.name
-    ~> jsonEmptyObject
+    encodeJson (UserReg u) = 
+        "email" := u.email
+        ~> "password" := u.password
+        ~> "confirmation" := u.confirmation
+        ~> "name" := u.name
+        ~> jsonEmptyObject
 
 instance decodeUserReg :: DecodeJson UserReg where
-  decodeJson = gDecodeJson
+    decodeJson = gDecodeJson
