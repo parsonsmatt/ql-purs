@@ -3,6 +3,7 @@ module QuickLift.Api where
 import BigPrelude
 import Debug.Trace
 
+import Data.Foreign
 import Data.Foreign.Class
 import Control.Monad.Aff (Aff())
 import Network.HTTP.Affjax (AJAX())
@@ -42,10 +43,12 @@ qlReq p r =
                     , content = Just r
                     }
 
-postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Maybe Int)
+postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Either String Int)
 postRegistration u = do
     res <- qlReq "users" u
-    pure (floor <$> (eitherToMaybe <<< read $ res.response))
+    let asdf :: Either ForeignError (Either String Int)
+        asdf = read res.response
+    pure (Left "asdf")
 
 postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe User)
 postAuthentication auth = do
