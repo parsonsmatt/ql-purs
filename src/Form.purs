@@ -2,7 +2,7 @@ module Form where
 
 import BigPrelude
 import Unsafe.Coerce
-import qualified Data.String as Str
+import Data.String as Str
 
 import Optic.Lens
 import Optic.Core
@@ -13,13 +13,13 @@ import Data.Either
 import Data.Maybe
 
 import Halogen (action)
-import qualified Halogen.HTML.Properties.Indexed as P
+import Halogen.HTML.Properties.Indexed as P
 import Halogen.HTML.Properties.Indexed (IProp(..))
-import qualified Halogen.HTML.Events.Indexed as E
-import qualified Halogen.HTML.Events.Forms as EF
-import qualified Halogen.HTML.Events.Handler as E
-import qualified Halogen.Themes.Bootstrap3 as B
-import qualified Halogen.HTML.Indexed as H
+import Halogen.HTML.Events.Indexed as E
+import Halogen.HTML.Events.Forms as EF
+import Halogen.HTML.Events.Handler as E
+import Halogen.Themes.Bootstrap3 as B
+import Halogen.HTML.Indexed as H
 
 import Halogen.HTML.Core (Prop(..), HTML(..))
 import Form.Types

@@ -10,9 +10,9 @@ import Halogen.Util (appendToBody)
 import Control.Monad.Eff.Exception (throwException)
 import Network.HTTP.Affjax (AJAX())
 
-import qualified QuickLift as Q
-import qualified QuickLift.State as S
-import qualified Router as R
+import QuickLift as Q
+import QuickLift.State as S
+import Router as R
 import Types
 
 main :: forall eff. Eff (QL eff) Unit
