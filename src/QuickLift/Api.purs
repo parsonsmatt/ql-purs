@@ -6,6 +6,7 @@ import Debug.Trace
 import Data.Foreign
 import Data.Foreign.Class
 import Control.Monad.Aff (Aff())
+import Data.Argonaut.Core (Json)
 import Network.HTTP.Affjax (AJAX())
 import Network.HTTP.Method (Method(..))
 import Network.HTTP.Affjax as AJ
@@ -46,8 +47,8 @@ qlReq p r =
 postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Either String Int)
 postRegistration u = do
     res <- qlReq "users" u
-    let asdf :: Either ForeignError (Either String Int)
-        asdf = read res.response
+    let a :: String
+        a = res.response
     pure (Left "asdf")
 
 postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe User)

@@ -75,7 +75,7 @@ instance requestableUserReg :: Requestable UserReg where
 
 instance encodeUserReg :: EncodeJson UserReg where
     encodeJson (UserReg u) = 
-        "email" := u.email
+           "email" := u.email
         ~> "password" := u.password
         ~> "confirmation" := u.confirmation
         ~> "name" := u.name

@@ -76,15 +76,15 @@ ui = component render eval
           reg <- gets _.registration
           res <- liftAff' (API.postRegistration reg)
           case res of
-               Just n -> do
+               Right n -> do
                    let saved = User { name:  reg ^. _UserReg .. name
                                     , email: reg ^. _UserReg .. email
                                     , id:    n
                                     }
                    modify (stCurrentUser ?~ saved)
                    eval (Goto Profile unit)
-               Nothing -> do
-                   modify (stErrors ?~ ["There was an error registering"])
+               Left err -> do
+                   modify (stErrors ?~ ["There was an error registering:", err])
 
       handleAuthentication (Edit fn) = modify (stAuthentication %~ fn)
       handleAuthentication Submit = do

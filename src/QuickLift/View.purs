@@ -76,9 +76,8 @@ renderView (Sessions New) st =
       let d = fromMaybe (sess ^. _Session .. date_) (dateFromString str)
        in sess # _Session .. date_ .~ d 
 
-
 renderView Registration st = 
-    H.div_ $
+    H.div_ $ errs st.errors :
         WF.renderForm st.registration Register do
             WF.textField "name" "Name:" (_UserReg .. name) Right
             WF.emailField "email" "Email:" (_UserReg .. email) validEmail
@@ -114,6 +113,9 @@ succLink Nothing =
 succLink (Just n) =
   linkTo (Sessions </> Show n) "asdfffff"
 
+errs :: forall a b. Maybe (Array String) -> HTML a b
+errs Nothing = H.div_ []
+errs (Just errors) = H.div_ (map (\e -> H.p_ [H.text e]) errors)
 
 linkSession :: forall a. Session -> HTML a Input
 linkSession (Session s) =
