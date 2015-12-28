@@ -62,12 +62,12 @@ instance isForeignArrSession :: IsForeign ArrSession where
   read f = ArrSession <$> read f
 
 instance respondableArrSession :: Respondable ArrSession where
-  responseType = JSONResponse
+  responseType = Tuple Nothing JSONResponse
   fromResponse = read
 
 instance sessionIsForeign :: IsForeign Session where
   read = readSession
-    
+
 readSession :: Foreign -> F Session
 readSession f = do
   t <- readProp "text" f
@@ -77,7 +77,7 @@ readSession f = do
   pure (mkSession d t i u)
 
 instance respondableSession :: Respondable Session where
-  responseType = JSONResponse
+  responseType = Tuple Nothing JSONResponse
   fromResponse = read
 
 

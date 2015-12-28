@@ -32,7 +32,7 @@ newtype User
   }
 
 _User :: LensP User { name :: String, email :: String, id :: Int }
-_User f (User o) = User <$> f o 
+_User f (User o) = User <$> f o
 
 name :: forall b a r. Lens { name :: a | r } { name :: b | r } a b
 name f o = o { name = _ } <$> f o.name
@@ -56,9 +56,9 @@ instance showUser :: Show User where
 
 instance respondableUser :: Respondable User where
   responseType =
-    JSONResponse
+    Tuple Nothing JSONResponse
   fromResponse json =
-    mkUser <$> readProp "name" json 
+    mkUser <$> readProp "name" json
            <*> readProp "email" json
            <*> readProp "id" json
 
@@ -74,7 +74,7 @@ instance isForeignUser :: IsForeign User where
     <*> readProp "id" f
 
 instance encodeUser :: EncodeJson User where
-  encodeJson (User u) = 
+  encodeJson (User u) =
        "name"  := u.name
     ~> "email" := u.email
     ~> jsonEmptyObject

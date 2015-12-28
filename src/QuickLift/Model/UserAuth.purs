@@ -52,7 +52,7 @@ instance eqUserAuth :: Eq UserAuth where eq = gEq
 
 instance respondableUserAuth :: Respondable UserAuth where
   responseType =
-    JSONResponse
+    Tuple Nothing JSONResponse
   fromResponse json = mkUserAuth
     <$> readProp "email" json
     <*> readProp "password" json
@@ -64,7 +64,7 @@ instance requestableUserAuth :: Requestable UserAuth where
      in toRequest str
 
 instance encodeUserAuth :: EncodeJson UserAuth where
-  encodeJson (UserAuth u) = 
+  encodeJson (UserAuth u) =
        "email" := u.email
     ~> "password" := u.password
     ~> "confirmation" := u.confirmation

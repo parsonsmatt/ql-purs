@@ -61,7 +61,7 @@ instance eqUserReg :: Eq UserReg where eq = gEq
 
 instance respondableUserReg :: Respondable UserReg where
     responseType =
-        JSONResponse
+        Tuple Nothing JSONResponse
     fromResponse json = mkRegistration
         <$> readProp "email" json
         <*> readProp "password" json
@@ -74,7 +74,7 @@ instance requestableUserReg :: Requestable UserReg where
          in toRequest str
 
 instance encodeUserReg :: EncodeJson UserReg where
-    encodeJson (UserReg u) = 
+    encodeJson (UserReg u) =
            "email" := u.email
         ~> "password" := u.password
         ~> "confirmation" := u.confirmation
