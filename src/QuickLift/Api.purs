@@ -18,7 +18,6 @@ import Network.HTTP.MimeType
 import Data.Int
 
 import QuickLift.Model
-import QuickLift.Api.AesonEither
 
 getUser :: forall eff. Int -> Aff (ajax :: AJAX | eff) (Maybe User)
 getUser i = do
