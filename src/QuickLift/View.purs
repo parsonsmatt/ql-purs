@@ -2,7 +2,8 @@ module QuickLift.View where
 
 import BigPrelude
 
-import qualified Data.String as Str
+import Data.String as Str
+import Data.String.Regex as Reg
 import Data.Array hiding ((..))
 
 import Halogen
@@ -79,7 +80,7 @@ renderView (Sessions New) st =
 renderView Registration st =
     H.div_ $ errs st.errors :
         WF.renderForm st.registration Register do
-            WF.textField "name" "Name:" (_UserReg .. name) Right
+            WF.textField "name" "User name:" (_UserReg .. name) urlSafe
             WF.emailField "email" "Email:" (_UserReg .. email) validEmail
             WF.passwordField "password" "Password:" (_UserReg .. password) validPassword
             WF.passwordField "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
@@ -91,6 +92,10 @@ renderView Registration st =
           | str == st ^. stRegistration .. _UserReg .. password = Right str
           | otherwise = Left "Password must match confirmation"
       validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
+      urlSafe str = case Reg.match (Reg.regex "^[a-zA-Z0-9_-]*$" Reg.noFlags) str of
+                         Nothing -> Right str
+                         Just _ -> Left "Only alphanumeric characters, '_', and '-' are allowed."
+
 
 renderView Login st =
   H.div_ $ errs st.errors :

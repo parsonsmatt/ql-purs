@@ -2,10 +2,11 @@ module QuickLift where
 
 import BigPrelude
 
-import qualified Data.String as Str
+import Data.String as Str
 
 import Data.Int hiding (fromString)
 import Control.Monad
+import Control.Monad.Maybe.Trans
 import Data.Array hiding ((..))
 import Control.Monad.Eff.Console as Console
 
@@ -52,9 +53,13 @@ ui = component render eval
           pure n
 
       eval (LoadSessions a) = do
-          s <- liftAff' (API.getUserSessions 1)
-          modify .. set stLoadedSessions .. concat .. maybeToArray $ s
-          pure a
+          u <- gets _.currentUser
+          case u of
+               Nothing -> pure a
+               Just user -> do
+                   s <- liftAff' (API.getUserSessions user)
+                   modify .. set stLoadedSessions .. concat .. maybeToArray $ s
+                   pure a
 
       eval (NewSession inp a) = handleNewSession inp $> a
       eval (Register inp a) = handleRegistration inp $> a
@@ -62,14 +67,16 @@ ui = component render eval
 
       handleNewSession (Edit fn) = modify (stCurrentSession %~ fn)
       handleNewSession Submit = do
-          sess <- gets _.currentSession
-          result <- liftAff' (API.postSession sess)
-          for_ result \n -> do
-              let saved' = sess # _Session .. id_ .~ n
-                  rt = Sessions </> Show n
-              modify (stCurrentSession .~ saved')
-              modify (stLoadedSessions %~ (saved' :))
-              eval (Goto rt unit)
+          auth <- gets (\s -> Tuple <$> s.authToken <*> s.currentUser)
+          for_ auth \(Tuple token user) -> do
+              sess <- gets _.currentSession
+              result <- liftAff' (API.postSession token user sess)
+              for_ result \n -> do
+                  let saved' = sess # _Session .. id_ .~ n
+                      rt = Sessions </> Show n
+                  modify (stCurrentSession .~ saved')
+                  modify (stLoadedSessions %~ (saved' :))
+                  eval (Goto rt unit)
 
       handleRegistration (Edit fn) = modify (stRegistration %~ fn)
       handleRegistration Submit = do
@@ -79,7 +86,6 @@ ui = component render eval
                Right n -> do
                    let saved = User { name:  reg ^. _UserReg .. name
                                     , email: reg ^. _UserReg .. email
-                                    , id:    n
                                     }
                    modify (stCurrentUser ?~ saved)
                    eval (Goto Profile unit)
@@ -90,11 +96,11 @@ ui = component render eval
       handleAuthentication Submit = do
           auth <- gets _.authentication
           res <- liftAff' (API.postAuthentication auth)
-          liftEff' (Console.log .. show $ res)
           case res of
-               Nothing -> do
+               Nothing ->
                    modify (stErrors ?~ ["That login wasn't quite right. Try again?"])
-               Just token -> do
-                   modify (stAuthToken ?~ token)
+               Just (Tuple session user) -> do
                    modify (stErrors ?~ [])
+                   modify (stCurrentUser ?~ user)
+                   modify (stAuthToken ?~ session)
                    eval (Goto Profile unit)

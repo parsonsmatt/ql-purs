@@ -28,10 +28,9 @@ newtype User
   = User
   { name :: String
   , email :: String
-  , id :: Int
   }
 
-_User :: LensP User { name :: String, email :: String, id :: Int }
+_User :: LensP User { name :: String, email :: String }
 _User f (User o) = User <$> f o
 
 name :: forall b a r. Lens { name :: a | r } { name :: b | r } a b
@@ -40,14 +39,11 @@ name f o = o { name = _ } <$> f o.name
 email :: forall b a r. Lens { email :: a | r } { email :: b | r } a b
 email f o = o { email = _ } <$> f o.email
 
-id_ :: forall b a r. Lens { id :: a | r } { id :: b | r } a b
-id_ f o = o { id = _ } <$> f o.id
-
 emptyUser :: User
-emptyUser = User { name: "", email: "", id: -1 }
+emptyUser = User { name: "", email: "" }
 
-mkUser :: String -> String -> Int -> User
-mkUser n e i = User { name: n, email: e, id: i }
+mkUser :: String -> String -> User
+mkUser n e = User { name: n, email: e }
 
 derive instance genericUser :: Generic User
 
@@ -60,7 +56,6 @@ instance respondableUser :: Respondable User where
   fromResponse json =
     mkUser <$> readProp "name" json
            <*> readProp "email" json
-           <*> readProp "id" json
 
 instance requestableUser :: Requestable User where
   toRequest s =
@@ -71,7 +66,6 @@ instance isForeignUser :: IsForeign User where
   read f = mkUser
     <$> readProp "name" f
     <*> readProp "email" f
-    <*> readProp "id" f
 
 instance encodeUser :: EncodeJson User where
   encodeJson (User u) =

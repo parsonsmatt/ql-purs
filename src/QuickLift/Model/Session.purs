@@ -28,14 +28,14 @@ newtype Session
   { date :: Date
   , text :: String
   , id :: Int
-  , userId :: Int
+  , user :: Int
   }
 
 emptySession :: Session
 emptySession = Session
   { date: runPure (unsafeInterleaveEff now)
   , text: ""
-  , userId: 1
+  , user: 1
   , id: -1
   }
 
@@ -43,7 +43,7 @@ instance encodeSession :: EncodeJson Session where
   encodeJson (Session s) =
        "text" := s.text
     ~> "date" := toISOString s.date
-    ~> "userId" := 1
+    ~> "user" := s.user
     ~> "id" := s.id
     ~> jsonEmptyObject
 
@@ -73,7 +73,7 @@ readSession f = do
   t <- readProp "text" f
   d <- readProp "date" f
   i <- readProp "id" f
-  u <- readProp "userId" f
+  u <- readProp "user" f
   pure (mkSession d t i u)
 
 instance respondableSession :: Respondable Session where
@@ -82,16 +82,19 @@ instance respondableSession :: Respondable Session where
 
 
 mkSession :: Date -> String -> Int -> Int -> Session
-mkSession d t i u = Session { date: d, text: t, id: i, userId: u }
+mkSession d t i u = Session { date: d, text: t, id: i, user: u }
 
-_Session :: LensP Session { text :: String, date :: Date, userId :: Int, id :: Int }
+_Session :: LensP Session { text :: String, date :: Date, user :: Int, id :: Int }
 _Session f (Session o) = Session <$> f o
 
 date_ :: forall a b r. Lens { date :: a | r } { date :: b | r } a b
 date_ f o = o { date = _ } <$> f o.date
 
-userId :: forall a b r. Lens { userId :: a | r } { userId :: b | r } a b
-userId f o = o { userId = _ } <$> f o.userId
+user :: forall a b r. Lens { user :: a | r } { user :: b | r } a b
+user f o = o { user = _ } <$> f o.user
 
 text_ :: forall a b r. Lens { text :: a | r } { text :: b | r } a b
 text_ f o = o { text = _ } <$> f o.text
+
+id_ :: forall a b r. Lens { id ::  a | r } { id :: b | r } a b
+id_ f o = o { id = _ } <$> f o.id
