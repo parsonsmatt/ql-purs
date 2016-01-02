@@ -92,9 +92,9 @@ renderView Registration st =
           | str == st ^. stRegistration .. _UserReg .. password = Right str
           | otherwise = Left "Password must match confirmation"
       validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
-      urlSafe str = case Reg.match (Reg.regex "^[a-zA-Z0-9_-]*$" Reg.noFlags) str of
-                         Nothing -> Right str
-                         Just _ -> Left "Only alphanumeric characters, '_', and '-' are allowed."
+      urlSafe str = case Reg.match (Reg.regex "^[\\w\\d-_]*$" Reg.noFlags) str of
+                         Just _ -> Right str
+                         Nothing -> Left "Only alphanumeric characters, '_', and '-' are allowed."
 
 
 renderView Login st =

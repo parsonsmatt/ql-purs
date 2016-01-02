@@ -10,6 +10,7 @@ import Control.Monad.Maybe.Trans
 import Data.Array hiding ((..))
 import Control.Monad.Eff.Console as Console
 
+import Browser.WebStorage as WS
 import Halogen
 import Halogen.HTML.Indexed as H
 import Halogen.HTML.Properties.Indexed as P
@@ -44,6 +45,18 @@ ui = component render eval
                Registration -> modify (stCurrentUser .~ Just emptyUser)
                Sessions Index -> eval (LoadSessions unit)
                _ -> pure unit
+          st <- get
+          unless (isJust st.currentUser) do
+              for_ st.authToken \auth -> do
+                  res <- liftAff' (API.verifySession auth)
+                  case res of
+                       Nothing ->
+                           modify (stAuthToken .~ Nothing)
+                       Just (Tuple session user) -> do
+                           liftEff' (WS.setItem WS.localStorage "auth" session)
+                           modify (stErrors ?~ [])
+                           modify (stCurrentUser ?~ user)
+                           modify (stAuthToken ?~ session)
           liftAff' (updateUrl route)
           pure next
 
@@ -100,6 +113,7 @@ ui = component render eval
                Nothing ->
                    modify (stErrors ?~ ["That login wasn't quite right. Try again?"])
                Just (Tuple session user) -> do
+                   liftEff' (WS.setItem WS.localStorage "auth" session)
                    modify (stErrors ?~ [])
                    modify (stCurrentUser ?~ user)
                    modify (stAuthToken ?~ session)

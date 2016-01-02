@@ -5,6 +5,8 @@ import Prelude
 import qualified Halogen.HTML.Indexed as H
 import qualified Halogen.HTML.Properties.Indexed as P
 
+import Browser.WebStorage as WS
+
 import Data.String (drop)
 import DOM
 import Halogen
@@ -36,10 +38,14 @@ data Routes
 updateUrl :: forall e. Routes -> Aff (dom :: DOM | e) Unit
 updateUrl = setHash <<< drop 1 <<< link
 
-type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState :: s } 
+type ComponentSlot s f g = Unit -> { component :: Component s f g, initialState :: s }
 
-type QLEff eff = Aff (QL eff) 
-type QL eff = HalogenEffects (ajax :: AJAX, console :: CONSOLE | eff)
+type QLEff eff = Aff (QL eff)
+type QL eff =
+    HalogenEffects (webStorage :: WS.WebStorage
+                   , ajax :: AJAX
+                   , console :: CONSOLE | eff
+                   )
 
 class HasLink a where
   link :: a -> String
