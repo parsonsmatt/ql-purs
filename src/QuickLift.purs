@@ -2,7 +2,7 @@ module QuickLift where
 
 import BigPrelude
 
-import qualified Data.String as Str
+import Data.String as Str
 
 import Data.Int hiding (fromString)
 import Control.Monad
@@ -79,7 +79,6 @@ ui = component render eval
                Right n -> do
                    let saved = User { name:  reg ^. _UserReg .. name
                                     , email: reg ^. _UserReg .. email
-                                    , id:    n
                                     }
                    modify (stCurrentUser ?~ saved)
                    eval (Goto Profile unit)
@@ -91,6 +90,9 @@ ui = component render eval
           auth <- gets _.authentication
           res <- liftAff' (API.postAuthentication auth)
           liftEff' (Console.log .. show $ res)
-          for_ res \user -> do
-              modify (stCurrentUser ?~ user)
-              eval (Goto Profile unit)
+          case res of
+               Nothing -> liftEff' (Console.log "Nothing?!?!")
+               Just (Tuple session user) -> do
+                   modify (stCurrentUser ?~ user)
+                   modify (stCurrentLogin ?~ session)
+                   eval (Goto Profile unit)

@@ -95,3 +95,6 @@ userId f o = o { userId = _ } <$> f o.userId
 
 text_ :: forall a b r. Lens { text :: a | r } { text :: b | r } a b
 text_ f o = o { text = _ } <$> f o.text
+
+id_ :: forall a b r. Lens { id ::  a | r } { id :: b | r } a b
+id_ f o = o { id = _ } <$> f o.id

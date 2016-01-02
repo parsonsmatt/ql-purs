@@ -13,6 +13,7 @@ import QuickLift.Model
 type State =
   { currentPage :: Routes
   , currentUser :: Maybe User
+  , currentLogin :: Maybe String
   , loadedSessions :: Array Session
   , currentSession :: Session
   , registration :: UserReg
@@ -25,35 +26,42 @@ initialState =
   { currentPage: Home
   , currentUser: Nothing
   , loadedSessions: []
+  , currentLogin: Nothing
   , currentSession: emptySession
   , registration: emptyReg
   , authentication: emptyAuth
   , errors: Nothing
   }
 
+stCurrentLogin :: LensP State (Maybe String)
+stCurrentLogin =
+    lens
+        (_.currentLogin)
+        (_ { currentLogin = _ })
+
 stRegistration :: LensP State UserReg
 stRegistration =
-  lens
-    (_.registration)
-    (_ { registration = _ })
+    lens
+        (_.registration)
+        (_ { registration = _ })
 
 stCurrentSession :: LensP State Session
 stCurrentSession =
-  lens
-    (_.currentSession)
-    (_ { currentSession = _ })
+    lens
+        (_.currentSession)
+        (_ { currentSession = _ })
 
 stLoadedSessions :: LensP State (Array Session)
 stLoadedSessions =
-  lens 
-    (_.loadedSessions)
-    (_ { loadedSessions = _ })
+    lens
+        (_.loadedSessions)
+        (_ { loadedSessions = _ })
 
 stCurrentUser :: LensP State (Maybe User)
 stCurrentUser =
-  lens
-    (_.currentUser)
-    (_ { currentUser = _ })
+    lens
+        (_.currentUser)
+        (_ { currentUser = _ })
 
 stAuthentication :: LensP State UserAuth
 stAuthentication = lens _.authentication _ { authentication = _ }

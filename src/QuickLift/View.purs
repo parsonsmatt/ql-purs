@@ -2,7 +2,8 @@ module QuickLift.View where
 
 import BigPrelude
 
-import qualified Data.String as Str
+import Data.String as Str
+import Data.String.Regex as Reg
 import Data.Array hiding ((..))
 
 import Halogen
@@ -27,7 +28,7 @@ import Types
 import Types.Date
 
 renderView :: Routes -> State -> ComponentHTML Input
-renderView Home _ = 
+renderView Home _ =
   H.div_
   [ H.h1_ [ H.text "QuickLift" ]
   , H.p_ [ H.text "Welcome to QuickLift" ]
@@ -54,19 +55,19 @@ renderView (Sessions Index) st =
 
 
 renderView (Sessions (Show n)) st =
-  let maybeIndex = findIndex (eq n .. view (_Session .. id_)) st.loadedSessions 
+  let maybeIndex = findIndex (eq n .. view (_Session .. id_)) st.loadedSessions
       session = maybeIndex >>= index (st ^. stLoadedSessions)
    in showPage n session
 
 
 renderView (Sessions New) st =
-  H.div_ 
+  H.div_
     [ F.form (NewSession Submit)
-      [ F.textarea "session" "Session:" 
+      [ F.textarea "session" "Session:"
         (st.currentSession ^. _Session .. text_)
         (NewSession .. Edit .. set (_Session .. text_))
-      , F.date "date" "Date:" 
-        (yyyy_mm_dd (st.currentSession ^. _Session .. date_)) 
+      , F.date "date" "Date:"
+        (yyyy_mm_dd (st.currentSession ^. _Session .. date_))
         (NewSession .. Edit .. edDate)
       ]
     ]
@@ -74,12 +75,12 @@ renderView (Sessions New) st =
     edDate :: String -> Session -> Session
     edDate str sess =
       let d = fromMaybe (sess ^. _Session .. date_) (dateFromString str)
-       in sess # _Session .. date_ .~ d 
+       in sess # _Session .. date_ .~ d
 
-renderView Registration st = 
+renderView Registration st =
     H.div_ $ errs st.errors :
         WF.renderForm st.registration Register do
-            WF.textField "name" "Name:" (_UserReg .. name) Right
+            WF.textField "name" "User name:" (_UserReg .. name) urlSafe
             WF.emailField "email" "Email:" (_UserReg .. email) validEmail
             WF.passwordField "password" "Password:" (_UserReg .. password) validPassword
             WF.passwordField "confirm" "Confirmation:" (_UserReg .. confirmation) validConfirmation
@@ -91,8 +92,12 @@ renderView Registration st =
           | str == st ^. stRegistration .. _UserReg .. password = Right str
           | otherwise = Left "Password must match confirmation"
       validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
+      urlSafe str = case Reg.match (Reg.regex "^[a-zA-Z0-9_-]*$" Reg.noFlags) str of
+                         Nothing -> Right str
+                         Just _ -> Left "Only alphanumeric characters, '_', and '-' are allowed."
 
-renderView Login st = 
+
+renderView Login st =
   H.div_ $
     WF.renderForm st.authentication Authenticate do
       WF.emailField "email" "Email:" (_UserAuth .. email) validEmail
@@ -128,7 +133,7 @@ loadButton =
     [ H.text "Loaaaad" ]
 
 newButton :: forall a. HTML a Input
-newButton = 
+newButton =
   H.p_
     [ H.a [ P.href (link (Sessions </> New)), P.classes [B.btn, B.btnDefault] ]
       [ H.text "New Session" ]
@@ -136,12 +141,12 @@ newButton =
 
 showPage :: forall a. Int -> Maybe Session -> HTML a Input
 showPage n (Just (Session s)) =
-  H.div_ 
+  H.div_
     [ H.h1_ [ H.text $ yyyy_mm_dd s.date ]
     , H.p_ [ H.text s.text ]
     , newButton
     ]
-showPage n Nothing = 
+showPage n Nothing =
   H.div_
     [ H.h2_ [ H.text "hmm, not found... load it?" ]
     , loadButton

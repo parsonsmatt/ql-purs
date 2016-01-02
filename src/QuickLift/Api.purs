@@ -1,22 +1,22 @@
 module QuickLift.Api where
 
 import BigPrelude
-import Debug.Trace
 
-import Data.Foreign
-import Data.Foreign.Class
 import Control.Monad.Aff
 import Data.Argonaut.Core
 import Data.Argonaut.Decode
+import Data.Foreign
+import Data.Foreign.Class
+import Data.Int
 import Network.HTTP.Affjax
-import Network.HTTP.Method
 import Network.HTTP.Affjax as AJ
 import Network.HTTP.Affjax.Request
 import Network.HTTP.Affjax.Response
-import Network.HTTP.RequestHeader
+import Network.HTTP.Method
 import Network.HTTP.MimeType
-import Data.Int
+import Network.HTTP.RequestHeader
 
+import QuickLift.Api.Util
 import QuickLift.Model
 
 getUser :: forall eff. Int -> Aff (ajax :: AJAX | eff) (Maybe User)
@@ -38,25 +38,22 @@ postSession s = do
 qlReq :: forall eff r a. (Respondable r, Requestable a)
       => String -> a -> Aff (ajax :: AJAX | eff) (AJ.AffjaxResponse r)
 qlReq p r =
-    AJ.affjax $ AJ.defaultRequest
-                    { url = p
-                    , method = POST
-                    , headers = [ContentType (MimeType "application/json")]
-                    , content = Just r
-                    }
+    AJ.affjax $
+        AJ.defaultRequest
+            { url = p
+            , method = POST
+            , headers = [ContentType (MimeType "application/json")]
+            , content = Just r
+            }
 
 postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Either String Int)
 postRegistration u = do
-    res <- qlReq "users" u
-    pure (either (Left <<< show) id (foreignToEither res.response))
+    { response: res } <- qlReq "users" u
+    pure $ joinForeign show res
 
-foreignToEither
-    :: forall e a
-     . (IsForeign a, IsForeign e)
-    => Foreign -> F (Either e a)
-foreignToEither fgn = Right <$> readProp "Right" fgn <|> Left <$> readProp "Left" fgn
-
-postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe User)
+postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe (Tuple String User))
 postAuthentication auth = do
-    res <- qlReq "authentication" auth
-    pure (eitherToMaybe <<< read $ res.response)
+    { response: res } <- qlReq "users/login" auth
+    let parsed = Tuple <$> readProp "sessionId" res <*> readProp "person" res
+    pure (eitherToMaybe $ parsed)
+
