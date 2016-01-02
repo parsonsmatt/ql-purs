@@ -24,15 +24,15 @@ getUser i = do
     { response: response } <- AJ.get ("users/" ++ show i)
     pure <<< eitherToMaybe <<< fromResponse $ response
 
-getUserSessions :: forall eff. Int -> Aff (ajax :: AJAX | eff) (Maybe (Array Session))
-getUserSessions i = map (map unArrSession) do
-    { response: response } <- AJ.get ("users/" ++ show i ++ "/sessions")
+getUserSessions :: forall eff. User -> Aff (ajax :: AJAX | eff) (Maybe (Array Session))
+getUserSessions (User user) = map (map unArrSession) do
+    { response: response } <- AJ.get ("users/" <> user.name <> "/sessions")
     pure <<< eitherToMaybe <<< fromResponse $ response
 
-postSession :: forall eff. Session -> Aff (ajax :: AJAX | eff) (Maybe Int)
-postSession s = do
-    res <- qlReq "sessions" s
-    let str = floor <$> (eitherToMaybe <<< read $ res.response)
+postSession :: forall eff. User -> Session -> Aff (ajax :: AJAX | eff) (Maybe Int)
+postSession (User user) s = do
+    res <- qlReq ("users/" <> user.name <> "/sessions") s
+    let str = floor <$> (eitherToMaybe <<< joinForeign show $ res.response)
     pure str
 
 qlReq :: forall eff r a. (Respondable r, Requestable a)
