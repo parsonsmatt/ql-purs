@@ -25,9 +25,11 @@ routing = profile
       <|> sessions
       <|> register
       <|> login
+      <|> logout
       <|> home
   where
     login = Login <$ route "login"
+    logout = Logout <$ route "logout"
     register = Registration <$ route "register"
     profile = Profile <$ route "profile"
     home = Home <$ lit ""

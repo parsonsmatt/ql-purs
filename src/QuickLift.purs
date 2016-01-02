@@ -3,6 +3,7 @@ module QuickLift where
 import BigPrelude
 
 import Data.String as Str
+import Debug.Trace
 
 import Data.Int hiding (fromString)
 import Control.Monad
@@ -34,30 +35,58 @@ ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval
   where
       render state =
-          L.defaultLayout
+          L.defaultLayout state
               [ renderView state.currentPage state
               ]
 
       eval :: Eval Input State Input (QLEff eff)
       eval (Goto route next) = do
           modify (_ { currentPage = route })
+          traceAnyM "what the hell"
+
           case route of
                Registration -> modify (stCurrentUser .~ Just emptyUser)
                Sessions Index -> eval (LoadSessions unit)
+               Logout -> do
+                   traceAnyM "well the case statement works I guess"
+                   eval (UserLogout unit)
                _ -> pure unit
+
+          traceAnyM "what the hell 2: the hellening"
+
           st <- get
-          unless (isJust st.currentUser) do
-              for_ st.authToken \auth -> do
-                  res <- liftAff' (API.verifySession auth)
-                  case res of
-                       Nothing ->
-                           modify (stAuthToken .~ Nothing)
-                       Just (Tuple session user) -> do
-                           liftEff' (WS.setItem WS.localStorage "auth" session)
-                           modify (stErrors ?~ [])
-                           modify (stCurrentUser ?~ user)
-                           modify (stAuthToken ?~ session)
-          liftAff' (updateUrl route)
+
+          traceAnyM "state: "
+          traceAnyM st
+          let u = st.currentUser
+
+          a <- if not $ isJust u then do
+                  traceAnyM "currentUser"
+                  traceAnyM st.currentUser
+
+                  for_ st.authToken \auth -> do
+                      traceAnyM "auth:"
+                      traceAnyM auth
+                      res <- liftAff' (API.verifySession auth)
+                      traceAnyM "res: "
+                      traceAnyM res
+                      case res of
+                           Nothing -> do
+                               traceAnyM "nothing??"
+                               modify (stAuthToken .~ Nothing)
+                           Just (Tuple session user) -> do
+                               traceAnyM "just??!?!?!?"
+                               liftEff' (WS.setItem WS.localStorage "auth" session)
+                               modify (stErrors ?~ [])
+                               modify (stCurrentUser ?~ user)
+                               modify (stAuthToken ?~ session)
+               else pure unit
+
+          unless (route == Logout) do
+              traceAnyM "updating routes"
+              liftAff' (updateUrl route)
+              traceAnyM "updated routes"
+              pure unit
           pure next
 
       eval (GetUser i n) = do
@@ -77,6 +106,17 @@ ui = component render eval
       eval (NewSession inp a) = handleNewSession inp $> a
       eval (Register inp a) = handleRegistration inp $> a
       eval (Authenticate inp a) = handleAuthentication inp $> a
+      eval (UserLogout a) = do
+          traceAnyM "before removeItem"
+          -- TODO: Figure out why this breaks??
+          --liftEff' (WS.removeItem WS.localStorage "auth")
+          traceAnyM "after removeItem"
+          modify (stCurrentUser .~ Nothing)
+          traceAnyM "after mod state"
+          modify (stAuthToken .~ Nothing)
+          traceAnyM "after mod token"
+          eval (Goto Home unit)
+          pure a
 
       handleNewSession (Edit fn) = modify (stCurrentSession %~ fn)
       handleNewSession Submit = do

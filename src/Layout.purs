@@ -5,11 +5,13 @@ import BigPrelude
 import Data.Array hiding ((..))
 
 import Halogen.HTML.Indexed (HTML(), ClassName())
-import qualified Halogen.HTML.Indexed as H
-import qualified Halogen.HTML.Properties.Indexed as P
-import qualified Halogen.Themes.Bootstrap3 as B
-import qualified Halogen.HTML.Events.Indexed as E
+import Halogen.HTML.Indexed as H
+import Halogen.HTML.Properties.Indexed as P
+import Halogen.Themes.Bootstrap3 as B
+import Halogen.HTML.Events.Indexed as E
 
+import QuickLift.State
+import QuickLift.Model
 import Types
 
 row :: forall a b. Array (HTML a b) -> HTML a b
@@ -21,10 +23,10 @@ col sz = H.div [ P.class_ sz ]
 col' :: forall a b. Array ClassName -> Array (HTML a b) -> HTML a b
 col' szs = H.div [ P.classes szs ]
 
---defaultLayout :: forall a b. Array (HTML a b) -> HTML a b
-defaultLayout page =
+defaultLayout :: State -> Array (HTML _ _) -> HTML _ _
+defaultLayout st page =
   H.div [ P.class_ B.container ]
-    [ header
+    [ header st.currentUser
     , row
         [ col' [ B.colLg10, B.colLgOffset1 ] page ]
     , row
@@ -37,20 +39,26 @@ container attrs = H.div (P.class_ B.container : attrs)
 
 container_ = container []
 
---header :: forall a b. HTML a b
-header =
+header :: Maybe User -> HTML _ _
+header muser =
   H.nav [ P.classes [ B.navbarNav, B.navbarFixedTop, B.navbarInverse] ]
     [ container_
-      [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ] 
+      [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ]
         [ H.text "QuickLift" ]
       , H.ul [ P.classes [ B.navbarNav, B.nav, B.navTabs] ]
         [ H.li_ [ linkTo (Sessions </> New) "Log a session" ]
         , H.li_ [ linkTo Profile "See your Profile" ]
         ]
-      , H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
-        [ H.li_ [ linkTo Login "Log in" ]
-        , H.li_ [ linkTo Registration "Sign up" ]
-        ]
+      , case muser of
+             Nothing ->
+                 H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
+                     [ H.li_ [ linkTo Login "Log in" ]
+                     , H.li_ [ linkTo Registration "Sign up" ]
+                     ]
+             Just u ->
+                 H.ul [ P.classes [ B.nav, B.navbarNav, B.navTabs, B.navbarRight ] ]
+                     [ H.li_ [ linkTo Logout "Log out" ] ]
+
       ]
     ]
 
@@ -59,5 +67,5 @@ footer =
   H.footer [ P.class_ (H.className "footer") ]
     [ H.text "QuickLift"
     , H.ul []
-      (map (\s -> H.li [] [ H.text s ] ) [ "About", "Contact", "Facebook", "Twitter" ] )
+      (map (\s -> H.li [] [ H.text s ]) [ "About", "Contact", "Facebook", "Twitter" ] )
     ]

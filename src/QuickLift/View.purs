@@ -29,18 +29,18 @@ import Types.Date
 
 renderView :: Routes -> State -> ComponentHTML Input
 renderView Home _ =
-  H.div_
-  [ H.h1_ [ H.text "QuickLift" ]
-  , H.p_ [ H.text "Welcome to QuickLift" ]
-  ]
+    H.div_
+        [ H.h1_ [ H.text "QuickLift" ]
+        , H.p_ [ H.text "Welcome to QuickLift" ]
+        ]
 
 
 renderView Profile st =
-  H.div_
-    [ H.h1_ [ H.text "Home" ]
-    , H.p_ [ H.text "what a nice profile!" ]
-    , H.div_ (printUser st.currentUser)
-    ]
+    H.div_
+        [ H.h1_ [ H.text "Home" ]
+        , H.p_ [ H.text "what a nice profile!" ]
+        , H.div_ (printUser st.currentUser)
+        ]
 
 
 renderView (Sessions Index) st =
