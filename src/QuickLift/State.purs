@@ -18,6 +18,7 @@ type State =
   , registration :: UserReg
   , authentication :: UserAuth
   , errors :: Maybe (Array String)
+  , authToken :: Maybe String
   }
 
 initialState :: State
@@ -29,7 +30,14 @@ initialState =
   , registration: emptyReg
   , authentication: emptyAuth
   , errors: Nothing
+  , authToken: Nothing
   }
+
+stAuthToken :: LensP State (Maybe String)
+stAuthToken =
+    lens
+        (_.authToken)
+        (_ { authToken = _ })
 
 stRegistration :: LensP State UserReg
 stRegistration =
@@ -45,7 +53,7 @@ stCurrentSession =
 
 stLoadedSessions :: LensP State (Array Session)
 stLoadedSessions =
-  lens 
+  lens
     (_.loadedSessions)
     (_ { loadedSessions = _ })
 

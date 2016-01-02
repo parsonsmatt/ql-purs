@@ -3,7 +3,7 @@ module QuickLift.Api where
 import BigPrelude
 import Debug.Trace
 
-import Data.Foreign
+import Data.Foreign hiding (isNull, isArray)
 import Data.Foreign.Class
 import Control.Monad.Aff
 import Data.Argonaut.Core
@@ -15,10 +15,9 @@ import Network.HTTP.Affjax.Request
 import Network.HTTP.Affjax.Response
 import Network.HTTP.RequestHeader
 import Network.HTTP.MimeType
-import Data.Int
+import Data.Int as Int
 
 import QuickLift.Model
-import QuickLift.Api.AesonEither
 
 getUser :: forall eff. Int -> Aff (ajax :: AJAX | eff) (Maybe User)
 getUser i = do
@@ -33,7 +32,7 @@ getUserSessions i = map (map unArrSession) do
 postSession :: forall eff. Session -> Aff (ajax :: AJAX | eff) (Maybe Int)
 postSession s = do
     res <- qlReq "sessions" s
-    let str = floor <$> (eitherToMaybe <<< read $ res.response)
+    let str = Int.floor <$> (eitherToMaybe <<< read $ res.response)
     pure str
 
 qlReq :: forall eff r a. (Respondable r, Requestable a)
@@ -57,7 +56,7 @@ foreignToEither
     => Foreign -> F (Either e a)
 foreignToEither fgn = Right <$> readProp "Right" fgn <|> Left <$> readProp "Left" fgn
 
-postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe User)
+postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe String)
 postAuthentication auth = do
-    res <- qlReq "authentication" auth
+    res <- qlReq "users/login" auth
     pure (eitherToMaybe <<< read $ res.response)

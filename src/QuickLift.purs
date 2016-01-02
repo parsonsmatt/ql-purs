@@ -91,6 +91,10 @@ ui = component render eval
           auth <- gets _.authentication
           res <- liftAff' (API.postAuthentication auth)
           liftEff' (Console.log .. show $ res)
-          for_ res \user -> do
-              modify (stCurrentUser ?~ user)
-              eval (Goto Profile unit)
+          case res of
+               Nothing -> do
+                   modify (stErrors ?~ ["That login wasn't quite right. Try again?"])
+               Just token -> do
+                   modify (stAuthToken ?~ token)
+                   modify (stErrors ?~ [])
+                   eval (Goto Profile unit)
