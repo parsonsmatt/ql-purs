@@ -1,5 +1,14 @@
 #!/bin/sh
 
+echo "Installing dependencies..."
 npm install
 pulp dep install
-pulp browserify -O -t assets/app.js
+
+echo "Building project..."
+pulp browserify -O -t assets/app_b.js
+
+echo "Optimizing..."
+# Note that this requires a command `closure` on the PATH that takes two
+# arguments:
+# java -jar compiler.jar --js $1 --js_output_file $2
+closure assets/app_b.js assets/app.js

@@ -4,5 +4,7 @@
 /.psci*
 /src/.webpack.js
 app.js
+app_b.js
+app_opt.js
 .browserify-cache.json
 .pulp-cache

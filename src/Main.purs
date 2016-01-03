@@ -2,7 +2,7 @@ module Main where
 
 import BigPrelude
 
-import Control.Monad.Aff (runAff, forkAff)
+import Control.Monad.Aff
 import Control.Monad.Eff.Console (log)
 import Control.Monad.Eff.Exception (throwException)
 

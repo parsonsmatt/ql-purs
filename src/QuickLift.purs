@@ -2,22 +2,12 @@ module QuickLift where
 
 import BigPrelude
 
-import Data.String as Str
-import Debug.Trace
-
-import Data.Int hiding (fromString)
 import Control.Monad
-import Control.Monad.Maybe.Trans
 import Data.Array hiding ((..))
-import Control.Monad.Eff.Console as Console
+import Data.Int hiding (fromString)
 
 import Browser.WebStorage as WS
 import Halogen
-import Halogen.HTML.Indexed as H
-import Halogen.HTML.Properties.Indexed as P
-import Halogen.HTML.Events.Handler as E
-import Halogen.HTML.Events.Indexed as E
-import Halogen.Themes.Bootstrap3 as B
 
 import Form.Types (FormInput(..))
 
@@ -42,51 +32,33 @@ ui = component render eval
       eval :: Eval Input State Input (QLEff eff)
       eval (Goto route next) = do
           modify (_ { currentPage = route })
-          traceAnyM "what the hell"
 
           case route of
                Registration -> modify (stCurrentUser .~ Just emptyUser)
                Sessions Index -> eval (LoadSessions unit)
-               Logout -> do
-                   traceAnyM "well the case statement works I guess"
-                   eval (UserLogout unit)
+               Logout -> eval (UserLogout unit)
                _ -> pure unit
-
-          traceAnyM "what the hell 2: the hellening"
 
           st <- get
 
-          traceAnyM "state: "
-          traceAnyM st
           let u = st.currentUser
 
-          a <- if not $ isJust u then do
-                  traceAnyM "currentUser"
-                  traceAnyM st.currentUser
+          unless (isJust u) do
+              for_ st.authToken \auth -> do
+                  res <- liftAff' (API.verifySession auth)
+                  case res of
+                       Nothing ->
+                           modify (stAuthToken .~ Nothing)
+                       Just (Tuple session user) -> do
+                           liftEff' (WS.setItem WS.localStorage "auth" session)
+                           modify (stErrors ?~ [])
+                           modify (stCurrentUser ?~ user)
+                           modify (stAuthToken ?~ session)
 
-                  for_ st.authToken \auth -> do
-                      traceAnyM "auth:"
-                      traceAnyM auth
-                      res <- liftAff' (API.verifySession auth)
-                      traceAnyM "res: "
-                      traceAnyM res
-                      case res of
-                           Nothing -> do
-                               traceAnyM "nothing??"
-                               modify (stAuthToken .~ Nothing)
-                           Just (Tuple session user) -> do
-                               traceAnyM "just??!?!?!?"
-                               liftEff' (WS.setItem WS.localStorage "auth" session)
-                               modify (stErrors ?~ [])
-                               modify (stCurrentUser ?~ user)
-                               modify (stAuthToken ?~ session)
-               else pure unit
+          if route == Logout
+              then liftEff' (WS.removeItem WS.localStorage "auth")
+              else liftAff' (updateUrl route)
 
-          unless (route == Logout) do
-              traceAnyM "updating routes"
-              liftAff' (updateUrl route)
-              traceAnyM "updated routes"
-              pure unit
           pure next
 
       eval (GetUser i n) = do
@@ -107,14 +79,8 @@ ui = component render eval
       eval (Register inp a) = handleRegistration inp $> a
       eval (Authenticate inp a) = handleAuthentication inp $> a
       eval (UserLogout a) = do
-          traceAnyM "before removeItem"
-          -- TODO: Figure out why this breaks??
-          --liftEff' (WS.removeItem WS.localStorage "auth")
-          traceAnyM "after removeItem"
           modify (stCurrentUser .~ Nothing)
-          traceAnyM "after mod state"
           modify (stAuthToken .~ Nothing)
-          traceAnyM "after mod token"
           eval (Goto Home unit)
           pure a
 
