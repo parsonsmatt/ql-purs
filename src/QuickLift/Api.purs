@@ -54,4 +54,3 @@ verifySession token = do
     { response: res } <- qlPost "users/verify" (show token)
     pure <<< eitherToMaybe $
         Tuple <$> readProp "sessionId" res <*> readProp "person" res
-

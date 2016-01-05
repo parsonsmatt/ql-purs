@@ -64,12 +64,10 @@ ui = component render eval
 
       eval (LoadSessions a) = do
           u <- gets _.currentUser
-          case u of
-               Nothing -> pure a
-               Just user -> do
-                   s <- liftAff' (API.getUserSessions user)
-                   modify .. set stLoadedSessions .. concat .. maybeToArray $ s
-                   pure a
+          for_ u \user -> do
+              s <- liftAff' (API.getUserSessions user)
+              modify .. set stLoadedSessions .. concat .. maybeToArray $ s
+              pure a
 
       eval (NewSession inp a) = handleNewSession inp $> a
       eval (Register inp a) = handleRegistration inp $> a
