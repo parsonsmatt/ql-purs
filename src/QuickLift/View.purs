@@ -6,7 +6,7 @@ import Data.String as Str
 import Data.String.Regex as Reg
 import Data.Array hiding ((..))
 
-import Halogen
+import Halogen hiding(set)
 import qualified Halogen.HTML.Indexed as H
 import qualified Halogen.HTML.Properties.Indexed as P
 import qualified Halogen.HTML.Events.Handler as E
