@@ -7,7 +7,7 @@ import Data.Array hiding ((..))
 import Data.Int hiding (fromString)
 
 import Browser.WebStorage as WS
-import Halogen
+import Halogen hiding (set)
 
 import Form.Types (FormInput(..))
 
