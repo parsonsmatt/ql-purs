@@ -102,14 +102,10 @@ renderView Login st =
     WF.renderForm st.authentication Authenticate do
       WF.emailField "email" "Email:" (_UserAuth .. email) validEmail
       WF.passwordField "password" "Password:" (_UserAuth .. password) validPassword
-      WF.passwordField "confirm" "Confirmation:" (_UserAuth .. confirmation) validConfirmation
   where
     validPassword str
       | Str.length str < 6 = Left "Password must be at least 6 characters"
       | otherwise = Right str
-    validConfirmation str
-      | str == st ^. stAuthentication .. _UserAuth .. password = Right str
-      | otherwise = Left "Password must match confirmation"
     validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 succLink :: forall a. Maybe Int -> HTML a Input

@@ -27,22 +27,20 @@ newtype UserAuth
   = UserAuth
   { email :: String
   , password :: String
-  , confirmation :: String
   }
 
-_UserAuth :: LensP UserAuth { email :: String, password :: String, confirmation :: String }
+_UserAuth :: LensP UserAuth { email :: String, password :: String }
 _UserAuth f (UserAuth o) = UserAuth <$> f o
 
 emptyAuth :: UserAuth
 emptyAuth = UserAuth
   { email: ""
   , password: ""
-  , confirmation: ""
   }
 
-mkUserAuth :: String -> String -> String -> UserAuth
-mkUserAuth e p pc =
-  UserAuth { email: e, password: p, confirmation: pc }
+mkUserAuth :: String -> String -> UserAuth
+mkUserAuth e p =
+  UserAuth { email: e, password: p }
 
 derive instance genericUserAuth :: Generic UserAuth
 
@@ -56,7 +54,6 @@ instance respondableUserAuth :: Respondable UserAuth where
   fromResponse json = mkUserAuth
     <$> readProp "email" json
     <*> readProp "password" json
-    <*> readProp "confirmation" json
 
 instance requestableUserAuth :: Requestable UserAuth where
   toRequest s =
@@ -67,7 +64,6 @@ instance encodeUserAuth :: EncodeJson UserAuth where
   encodeJson (UserAuth u) =
        "email" := u.email
     ~> "password" := u.password
-    ~> "confirmation" := u.confirmation
     ~> jsonEmptyObject
 
 instance decodeUserAuth :: DecodeJson UserAuth where
