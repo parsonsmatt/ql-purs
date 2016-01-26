@@ -35,8 +35,10 @@ ui = component render eval
 
           case route of
                Registration -> modify (stCurrentUser .~ Just emptyUser)
-               Sessions Index -> eval (LoadSessions unit)
-               Logout -> eval (UserLogout unit)
+               Sessions Index -> eval (LoadSessions next) $> unit
+               Logout -> do
+                   liftEff' (WS.removeItem WS.localStorage "auth")
+                   eval (UserLogout next) $> unit
                _ -> pure unit
 
           st <- get
@@ -55,9 +57,7 @@ ui = component render eval
                            modify (stCurrentUser ?~ user)
                            modify (stAuthToken ?~ session)
 
-          if route == Logout
-              then liftEff' (WS.removeItem WS.localStorage "auth")
-              else liftAff' (updateUrl route)
+          liftAff' (updateUrl route)
 
           pure next
 

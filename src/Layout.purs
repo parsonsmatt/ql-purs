@@ -29,10 +29,10 @@ defaultLayout st page =
     [ header st.currentUser
     , row
         [ col' [ B.colLg10, B.colLgOffset1 ] page ]
-    , row
-      [ col' [ B.colMd8, B.colMdOffset2 ]
-        [ footer ]
-      ]
+   -- , row
+   --   [ col' [ B.colMd8, B.colMdOffset2 ]
+   --     [ footer ]
+   --   ]
     ]
 
 container attrs = H.div (P.class_ B.container : attrs)
@@ -46,8 +46,9 @@ header muser =
       [ H.a [ P.classes [ B.navbarBrand ], P.href (link Home) ]
         [ H.text "QuickLift" ]
       , H.ul [ P.classes [ B.navbarNav, B.nav, B.navTabs] ]
-        [ H.li_ [ linkTo (Sessions </> New) "Log a session" ]
-        , H.li_ [ linkTo Profile "See your Profile" ]
+        [ H.li_ [ linkTo (Sessions </> New) "Log" ]
+        , H.li_ [ linkTo (Sessions </> Index) "Sessions" ]
+        , H.li_ [ linkTo Profile "Profile" ]
         ]
       , case muser of
              Nothing ->
@@ -67,5 +68,5 @@ footer =
   H.footer [ P.class_ (H.className "footer") ]
     [ H.text "QuickLift"
     , H.ul []
-      (map (\s -> H.li [] [ H.text s ]) [ "About", "Contact", "Facebook", "Twitter" ] )
+      (map (\s -> H.li [] [ H.text s ]) [ "About", "Contact" ] )
     ]

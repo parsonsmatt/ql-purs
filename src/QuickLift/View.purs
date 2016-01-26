@@ -31,7 +31,7 @@ renderView :: Routes -> State -> ComponentHTML Input
 renderView Home _ =
     H.div_
         [ H.h1_ [ H.text "QuickLift" ]
-        , H.p_ [ H.text "Welcome to QuickLift" ]
+        , H.p_ [ H.text aboutQuickLift ]
         ]
 
 
@@ -155,3 +155,9 @@ printUser (Just (User user)) =
   [ H.p_ [ H.text ("Hello, " <> user.name <> "!") ]
   , linkTo (Sessions Index) "Go to sessions"
   ]
+
+aboutQuickLift :: String
+aboutQuickLift = """
+Welcome to QuickLift! This is a work-in-progress web application that's all
+about logging and tracking your weightlifting sessions.
+"""

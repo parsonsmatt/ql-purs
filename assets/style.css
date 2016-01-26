@@ -10,6 +10,12 @@ body {
     font-family: "Times New Roman", Times, serif;
 }
 
+@media (max-width: 770px) {
+    body {
+        padding-top: 140px;
+    }
+}
+
 body > div.container {
     font-size: 1.2em;
 }
