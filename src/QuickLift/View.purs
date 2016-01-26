@@ -139,7 +139,7 @@ showPage :: forall a. Int -> Maybe Session -> HTML a Input
 showPage n (Just (Session s)) =
   H.div_
     [ H.h1_ [ H.text $ yyyy_mm_dd s.date ]
-    , H.p_ [ H.text s.text ]
+    , H.pre_ [ H.text s.text ]
     , newButton
     ]
 showPage n Nothing =
