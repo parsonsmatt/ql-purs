@@ -6,7 +6,7 @@ import Data.String as Str
 import Data.String.Regex as Reg
 import Data.Array hiding ((..))
 
-import Halogen
+import Halogen hiding(set)
 import qualified Halogen.HTML.Indexed as H
 import qualified Halogen.HTML.Properties.Indexed as P
 import qualified Halogen.HTML.Events.Handler as E
@@ -31,7 +31,7 @@ renderView :: Routes -> State -> ComponentHTML Input
 renderView Home _ =
     H.div_
         [ H.h1_ [ H.text "QuickLift" ]
-        , H.p_ [ H.text "Welcome to QuickLift" ]
+        , H.p_ [ H.text aboutQuickLift ]
         ]
 
 
@@ -102,14 +102,10 @@ renderView Login st =
     WF.renderForm st.authentication Authenticate do
       WF.emailField "email" "Email:" (_UserAuth .. email) validEmail
       WF.passwordField "password" "Password:" (_UserAuth .. password) validPassword
-      WF.passwordField "confirm" "Confirmation:" (_UserAuth .. confirmation) validConfirmation
   where
     validPassword str
       | Str.length str < 6 = Left "Password must be at least 6 characters"
       | otherwise = Right str
-    validConfirmation str
-      | str == st ^. stAuthentication .. _UserAuth .. password = Right str
-      | otherwise = Left "Password must match confirmation"
     validEmail str = maybe (Left "Must have @ symbol") (const (Right str)) (Str.indexOf "@" str)
 
 succLink :: forall a. Maybe Int -> HTML a Input
@@ -143,7 +139,7 @@ showPage :: forall a. Int -> Maybe Session -> HTML a Input
 showPage n (Just (Session s)) =
   H.div_
     [ H.h1_ [ H.text $ yyyy_mm_dd s.date ]
-    , H.p_ [ H.text s.text ]
+    , H.pre_ [ H.text s.text ]
     , newButton
     ]
 showPage n Nothing =
@@ -159,3 +155,9 @@ printUser (Just (User user)) =
   [ H.p_ [ H.text ("Hello, " <> user.name <> "!") ]
   , linkTo (Sessions Index) "Go to sessions"
   ]
+
+aboutQuickLift :: String
+aboutQuickLift = """
+Welcome to QuickLift! This is a work-in-progress web application that's all
+about logging and tracking your weightlifting sessions.
+"""

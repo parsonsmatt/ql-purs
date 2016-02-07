@@ -2,7 +2,7 @@ module Router where
 
 import BigPrelude
 
-import Halogen
+import Halogen hiding (set)
 
 import DOM (DOM())
 import Control.Monad.Eff.Exception (EXCEPTION())
