@@ -72,4 +72,3 @@ instance encodeUserAuth :: EncodeJson UserAuth where
 
 instance decodeUserAuth :: DecodeJson UserAuth where
   decodeJson = gDecodeJson
-

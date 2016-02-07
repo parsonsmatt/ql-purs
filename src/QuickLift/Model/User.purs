@@ -75,3 +75,17 @@ instance encodeUser :: EncodeJson User where
 
 instance decodeUser :: DecodeJson User where
   decodeJson = gDecodeJson
+
+newtype AuthResponse
+    = AuthResponse
+    { sessionId :: String
+    , person :: User
+    }
+
+
+mkAuthResp s u = AuthResponse { sessionId: s, person: u }
+
+derive instance genericeAuthResp :: Generic AuthResponse
+
+instance foreignAuthResp :: IsForeign AuthResponse where
+    read f = mkAuthResp <$> readProp "sessionId" f <*> readProp "person" f

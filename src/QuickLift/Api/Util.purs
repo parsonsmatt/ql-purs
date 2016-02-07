@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Monad.Aff
 import Control.Alt
+import Data.Tuple
 import Data.Either
 import Data.Maybe
 import Data.Foreign hiding (isNull, isArray)
@@ -33,12 +34,20 @@ foreignToEither fgn = Right <$> readProp "Right" fgn <|> Left <$> readProp "Left
 -- | `joinForeign` takes a function which converts a `ForeignError` into an
 -- | value of type `e` and collapses the two layers into a single Either.
 joinForeign
-    :: forall e a
-     . (IsForeign a, IsForeign e)
-     => (ForeignError -> e)
-     -> Foreign
-     -> Either e a
+    :: forall e a. (IsForeign a, IsForeign e)
+    => (ForeignError -> e)
+    -> Foreign
+    -> Either e a
 joinForeign f = either (Left <<< f) id <<< foreignToEither
+
+
+readTuple
+    :: forall a b. (IsForeign a, IsForeign b)
+    => String
+    -> String
+    -> Foreign
+    -> F (Tuple a b)
+readTuple a b r = Tuple <$> readProp a r <*> readProp b r
 
 -- | `readEither` will attempt to read a value belonging to one of two types.
 -- | It is right biased, allowing for use of `Either String SomeType` error

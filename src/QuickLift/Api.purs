@@ -3,18 +3,18 @@ module QuickLift.Api where
 import BigPrelude
 
 import Control.Monad.Aff
-import Data.Argonaut.Core
-import Data.Argonaut.Decode
+-- import Data.Argonaut.Core
+-- import Data.Argonaut.Decode
 import Data.Foreign.Class
 import Data.Foreign hiding (isNull, isArray)
 import Data.Int as Int
 import Network.HTTP.Affjax
 import Network.HTTP.Affjax as AJ
-import Network.HTTP.Affjax.Request
+-- import Network.HTTP.Affjax.Request
 import Network.HTTP.Affjax.Response
-import Network.HTTP.Method
-import Network.HTTP.MimeType
-import Network.HTTP.RequestHeader
+-- import Network.HTTP.Method
+-- import Network.HTTP.MimeType
+-- import Network.HTTP.RequestHeader
 
 import QuickLift.Api.Util
 import QuickLift.Model
@@ -35,10 +35,14 @@ postSession token (User user) s = do
     let str = Int.floor <$> (eitherToMaybe <<< joinForeign show $ res.response)
     pure str
 
-postRegistration :: forall eff. UserReg -> Aff (ajax :: AJAX | eff) (Either String Int)
+postRegistration
+    :: forall eff
+     . UserReg
+    -> Aff (ajax :: AJAX | eff) (Either String AuthResponse)
 postRegistration u = do
     { response: res } <- qlPost "users" u
-    pure $ joinForeign show res
+    pure (joinForeign show res)
+
 
 postAuthentication :: forall eff. UserAuth -> Aff (ajax :: AJAX | eff) (Maybe (Tuple String User))
 postAuthentication auth = do
@@ -54,4 +58,3 @@ verifySession token = do
     { response: res } <- qlPost "users/verify" (show token)
     pure <<< eitherToMaybe $
         Tuple <$> readProp "sessionId" res <*> readProp "person" res
-

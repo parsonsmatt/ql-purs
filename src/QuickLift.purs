@@ -102,10 +102,11 @@ ui = component render eval
           reg <- gets _.registration
           res <- liftAff' (API.postRegistration reg)
           case res of
-               Right n -> do
+               Right (AuthResponse { sessionId, person }) -> do
                    let saved = User { name:  reg ^. _UserReg .. name
                                     , email: reg ^. _UserReg .. email
                                     }
+                   modify (stAuthToken ?~ sessionId)
                    modify (stCurrentUser ?~ saved)
                    eval (Goto Profile unit)
                Left err -> do
