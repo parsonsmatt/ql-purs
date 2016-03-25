@@ -2,24 +2,23 @@ module QuickLift where
 
 import BigPrelude
 
-import Control.Monad
-import Data.Array hiding ((..))
-import Data.Int hiding (fromString)
+import Control.Monad (unless)
+import Data.Array ((:), concat)
 
 import Browser.WebStorage as WS
-import Halogen hiding (set)
+import Halogen (Eval, Component, component, modify, liftEff', liftAff', gets, get)
 
 import Form.Types (FormInput(..))
 
-import QuickLift.View
-import QuickLift.State
-import QuickLift.Model
-import QuickLift.Input
+import QuickLift.View (renderView)
+import QuickLift.State (State, stAuthToken, stCurrentUser, stErrors, stAuthentication, stRegistration, stLoadedSessions, stCurrentSession)
+import QuickLift.Model (AuthResponse(AuthResponse), User(User), email, _UserReg, name, id_, _Session, emptyUser)
+import QuickLift.Input (Input(Goto, UserLogout, Authenticate, Register, NewSession, LoadSessions, GetUser))
 import QuickLift.Api as API
 
 import Layout as L
 
-import Types
+import Types (QLEff, CRUD(Show, Index), Routes(Profile, Sessions, Home, Logout, Registration), (</>), updateUrl)
 
 ui :: forall eff. Component State Input (QLEff eff)
 ui = component render eval

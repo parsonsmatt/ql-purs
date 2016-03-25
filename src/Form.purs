@@ -1,28 +1,21 @@
 module Form where
 
 import BigPrelude
-import Unsafe.Coerce
 import Data.String as Str
 
-import Optic.Lens
-import Optic.Core
+import Optic.Core (LensP, set, (..), (^.))
 
-import Data.Tuple
-import Data.Array hiding ((..))
-import Data.Either
-import Data.Maybe
+import Data.Array (snoc)
+import Data.Either (Either(Right, Left))
+import Data.Maybe (maybe)
 
-import Halogen (action)
 import Halogen.HTML.Properties.Indexed as P
-import Halogen.HTML.Properties.Indexed (IProp(..))
-import Halogen.HTML.Events.Indexed as E
-import Halogen.HTML.Events.Forms as EF
-import Halogen.HTML.Events.Handler as E
+import Halogen.HTML.Events.Indexed (input, onValueChange) as E
 import Halogen.Themes.Bootstrap3 as B
 import Halogen.HTML.Indexed as H
 
-import Halogen.HTML.Core (Prop(..), HTML(..))
-import Form.Types
+import Halogen.HTML.Core (HTML)
+import Form.Types (FormInput(Edit, Submit), submitButton_)
 
 
 lensyForm data_ eventType fields = 
@@ -111,6 +104,7 @@ field type_ id_ label value onChange =
       ]
     ]
 
+textarea :: forall t26 t6. String -> String -> String -> (String -> Unit -> t26 Unit) -> HTML t6 (t26 Unit)
 textarea id_ label value onChange = 
   H.div [ P.classes [ B.formGroup ] ] 
   [ H.label [ P.for id_ ]

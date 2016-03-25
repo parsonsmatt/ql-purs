@@ -1,14 +1,13 @@
 module QuickLift.State where
 
-import BigPrelude
+import BigPrelude (Maybe(Nothing))
 
-import Optic.Lens
-import Optic.Core
+import Optic.Lens (lens)
+import Optic.Core (LensP)
 
-import Types
-import Types.Date
+import Types (Routes(Home))
 
-import QuickLift.Model
+import QuickLift.Model (UserAuth, User, Session, UserReg, emptyAuth, emptyReg, emptySession)
 
 type State =
   { currentPage :: Routes

@@ -1,18 +1,17 @@
 module Layout where
 
-import BigPrelude
+import BigPrelude (Maybe(Just, Nothing), map)
 
-import Data.Array hiding ((..))
+import Data.Array ((:))
 
 import Halogen.HTML.Indexed (HTML(), ClassName())
 import Halogen.HTML.Indexed as H
 import Halogen.HTML.Properties.Indexed as P
 import Halogen.Themes.Bootstrap3 as B
-import Halogen.HTML.Events.Indexed as E
 
-import QuickLift.State
-import QuickLift.Model
-import Types
+import QuickLift.State (State)
+import QuickLift.Model (User)
+import Types (CRUD(Index, New), Routes(Logout, Registration, Login, Profile, Sessions, Home), linkTo, (</>), link)
 
 row :: forall a b. Array (HTML a b) -> HTML a b
 row = H.div [ P.class_ B.row ]

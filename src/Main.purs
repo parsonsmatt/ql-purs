@@ -1,9 +1,8 @@
 module Main where
 
-import BigPrelude
+import BigPrelude (Unit, Eff, ($), bind, unit, pure, const)
 
-import Control.Monad.Aff
-import Control.Monad.Eff.Console (log)
+import Control.Monad.Aff (forkAff, runAff)
 import Control.Monad.Eff.Exception (throwException)
 
 import Browser.WebStorage as WS

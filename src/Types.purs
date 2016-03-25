@@ -1,22 +1,21 @@
 module Types where
 
-import Prelude
+import Prelude (class Eq, Unit, ($), show, (++), (<<<), (==))
 
-import Data.Generic
-import qualified Halogen.HTML.Indexed as H
-import qualified Halogen.HTML.Properties.Indexed as P
+import Data.Generic (class Generic, gEq)
+import Halogen.HTML.Indexed as H
+import Halogen.HTML.Properties.Indexed as P
 
 import Browser.WebStorage as WS
 
 import Data.String (drop)
-import DOM
-import Halogen
+import DOM (DOM)
+import Halogen (HTML, HalogenEffects, Component)
 import Control.Monad.Aff (Aff())
 import Network.HTTP.Affjax (AJAX())
-import Control.Monad.Eff.Console
-import Routing.Hash.Aff
+import Control.Monad.Eff.Console (CONSOLE)
+import Routing.Hash.Aff (setHash)
 
-import Form.Types
 
 data CRUD
     = Index
@@ -70,8 +69,10 @@ instance crudHasLink :: HasLink CRUD where
     link New = "/new"
     link (Show n) = "/" ++ show n
 
-(</>) :: forall a b. (HasLink a, HasLink b) => (a -> b) -> a -> b
-(</>) = ($)
+divide :: forall a b. (HasLink a, HasLink b) => (a -> b) -> a -> b
+divide = ($)
+
+infixr 7 divide as </>
 
 linkTo :: Routes -> String -> HTML _ _
 linkTo r t = H.a [ P.href (link r) ] [ H.text t ]
